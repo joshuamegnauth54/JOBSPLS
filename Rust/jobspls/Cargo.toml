@@ -1,0 +1,15 @@
+[package]
+name = "jobspls"
+description = "DSAs in Rust until someone hires me."
+authors = ["Josh Megnauth <jo.sh@tutanota.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "Unlicense"
+repository = "https://github.com/joshuamegnauth54/jobspls"
+
+[profile.release]
+lto = true
+strip = true
+
+[dev-dependencies]
+rand = "0.8"

@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "jobspls"
+version = "0.1.0"
+description = "Josh Obtains Benefits by Saliently Programming Lame Stuff"
+authors = ["Josh Megnauth"]
+license = "Unlicense"
+readme = "../../README.md"
+repository = "https://github.com/joshuamegnauth54/JOBSPLS"
+keywords = ["algorithms", "data structures", "jobs"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

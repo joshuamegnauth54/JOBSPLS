@@ -1,5 +1,5 @@
 import pytest
-from jobspls.binary_search import binary_search
+from jobspls.search.binary import binary_search
 
 
 def test_numbers():

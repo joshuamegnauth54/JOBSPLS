@@ -1,11 +1,11 @@
-pub const Found = union { found: usize, not_found: usize };
+pub const BinaryRes = union(enum) { found: usize, not_found: usize };
 
-pub fn binary(comptime T: type, haystack: []T, lower: usize, upper: usize, needle: T) Found {
+pub fn binary(comptime T: type, haystack: []T, lower: usize, upper: usize, needle: T) BinaryRes {
     const index: usize = @divFloor(lower + upper, 2);
     const item: T = haystack[index];
 
     if (lower >= upper) {
-        return Found{ .not_found = index };
+        return BinaryRes{ .not_found = index };
     }
 
     if (item < needle) {
@@ -13,6 +13,6 @@ pub fn binary(comptime T: type, haystack: []T, lower: usize, upper: usize, needl
     } else if (item > needle) {
         return binary(T, haystack, lower, index - 1, needle);
     } else {
-        return Found{ .found = index };
+        return BinaryRes{ .found = index };
     }
 }

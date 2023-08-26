@@ -1,9 +1,6 @@
 """Binary search."""
 
-from jobspls.types import IndexCollection, PartialOrd
-
-
-def binary_search(vec: IndexCollection[PartialOrd], find: PartialOrd) -> int | None:
+def binary_search(vec, find):
     """Binary search."""
     lower: int = 0
     upper: int = len(vec) - 1

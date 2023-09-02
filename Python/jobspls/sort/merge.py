@@ -1,11 +1,13 @@
-from typing import TYPE_CHECKING, Sequence 
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from _typeshed import SupportsRichComparison
+    from collections.abc import Sequence
+
+    from _typeshed import SupportsAllComparisons
 
 
-def merge(left: Sequence[int], right: Sequence[int]) -> Sequence[SupportsRichComparison]:
-    merged: Sequence[SupportsRichComparison] = []
+def merge(left, right):
+    merged: Sequence[SupportsAllComparisons] = []
 
     # Indices and lengths
     # The book uses an ugly solution with side effects (list.pop)
@@ -15,8 +17,8 @@ def merge(left: Sequence[int], right: Sequence[int]) -> Sequence[SupportsRichCom
     rlen: int = len(right)
 
     while lidx < llen and ridx < rlen:
-        litem: SupportsRichComparison = left[lidx]
-        ritem: SupportsRichComparison = right[ridx]
+        litem: SupportsAllComparisons = left[lidx]
+        ritem: SupportsAllComparisons = right[ridx]
 
         if litem <= ritem:
             merged.append(litem)
@@ -26,9 +28,18 @@ def merge(left: Sequence[int], right: Sequence[int]) -> Sequence[SupportsRichCom
             ridx += 1
 
     # Append remaining numbers
-    # The halves should already be sorted so this is safe
+    # NOTE: invariants
+    # Both left and right are already sorted
+    # At least one of left/right is exhausted
     merged.extend(left[lidx:])
     merged.extend(right[ridx:])
 
     return merged
 
+def merge_sort(vec):
+    pivot: int = len(vec) // 2
+
+    left: Sequence[SupportsAllComparisons] = merge_sort(vec[:pivot])
+    right: Sequence[SupportsAllComparisons] = merge_sort(vec[pivot:])
+
+    return merge(left, right)

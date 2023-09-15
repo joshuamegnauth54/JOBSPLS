@@ -1,13 +1,14 @@
-package binary_search
+package search
 
 import (
+	"errors"
 	"golang.org/x/exp/constraints"
 	"math"
 )
 
-func binary_search[T constraints.Ordered](vec []T, find T) *int {
+func binary[T constraints.Ordered](vec []T, find T) (int, error) {
 	var lower int
-	upper := len(vec) - 1
+	upper := len(vec)
 
 	for lower <= upper {
 		index := int(math.Floor((float64(lower) + float64(upper)) / 2))
@@ -17,12 +18,10 @@ func binary_search[T constraints.Ordered](vec []T, find T) *int {
 			lower = index + 1
 		} else if element > find {
 			upper = index - 1
-
 		} else {
-			return &index
+			return index, nil
 		}
-
 	}
 
-	return nil
+	return -1, errors.New("Value not found")
 }

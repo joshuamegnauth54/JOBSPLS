@@ -14,8 +14,18 @@ pub const BinaryRes = union(enum) {
     not_found: usize,
 };
 
-// TODO
-pub fn binary(comptime T: type, haystack: []T, lower: usize, upper: usize, needle: T, comptime cmp: ?PartialOrd) BinaryRes {
+/// Search for `needle` in `haystack` using binary search.
+///
+/// `cmp` is only needed for non-builtin types, such as custom structs.
+pub inline fn binary(comptime T: type, haystack: []T, needle: T, comptime cmp: ?PartialOrd) BinaryRes {
+    return binary_bound(T, haystack, needle, 0, haystack.len, cmp);
+}
+
+/// Search for `needle` in `haystack` using binary search.
+///
+/// `cmp` is only necessary for non-builtin types, such as custom structs.
+/// `lower` and `upper` may be used to bind the search to a range.
+pub fn binary_bound(comptime T: type, haystack: []T, lower: usize, upper: usize, needle: T, comptime cmp: ?PartialOrd) BinaryRes {
     switch (@typeInfo(T)) {
         // Built-in types have operators defined so `cmp` isn't needed
         .Int, .ComptimeInt, .Float, .ComptimeFloat, .Bool => return binary_builtin(T, haystack, lower, upper, needle),

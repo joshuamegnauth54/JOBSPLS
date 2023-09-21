@@ -1,7 +1,7 @@
 //! Binary search for integral types
 
-const PartialOrd = @import("../traits/partialord.zig").PartialOrd;
-const Ordering = @import("../traits/partialord.zig").Ordering;
+const PartialOrd = @import("traits").PartialOrd;
+const Ordering = @import("traits").Ordering;
 const TypeInfo = @import("std").builtin.TypeInfo;
 
 /// Binary search result.

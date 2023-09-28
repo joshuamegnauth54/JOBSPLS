@@ -4,9 +4,13 @@ const Allocator = std.mem.Allocator;
 const expect = std.testing.expect;
 
 // Fill a map with counts of each character.
-fn char_counts(map: *AutoHashMap(u8, usize), s: []const u8) !void {
+fn char_counts(map: *AutoHashMap(u8, usize), s: []const u8) void {
     for (s) |ch| {
-        var entry = try map.getOrPutValue(ch, 0);
+        // NOTE: Won't panic because the capacity is ensured earlier
+        var entry = map.getOrPutAssumeCapacity(ch);
+        if (!entry.found_existing) {
+            entry.value_ptr.* = 0;
+        }
         entry.value_ptr.* += 1;
     }
 }
@@ -26,8 +30,8 @@ pub fn anagram(allocator: Allocator, s1: []const u8, s2: []const u8) !bool {
     defer s1_map.deinit();
     defer s2_map.deinit();
 
-    try char_counts(&s1_map, s1);
-    try char_counts(&s2_map, s2);
+    char_counts(&s1_map, s1);
+    char_counts(&s2_map, s2);
 
     // Both maps should have the same amount of letters (keys)
     if (s1_map.count() != s2_map.count()) {

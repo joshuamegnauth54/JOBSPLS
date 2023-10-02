@@ -27,3 +27,21 @@ test "substring found in order" {
     const sub = "Eevee";
     try expect(substr(s, sub));
 }
+
+test "substring not found" {
+    const s = "Emi is purrfect";
+    const sub = "perfect";
+    try expect(!substr(s, sub));
+}
+
+test "substring found out of order" {
+    const s = "Coconuts are tasty";
+    const sub = "Cat";
+    try expect(substr(s, sub));
+}
+
+test "substring larger than s" {
+    const s = "Coffee";
+    const sub = "Coffee is tasty";
+    try expect(!substr(s, sub));
+}

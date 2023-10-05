@@ -9,3 +9,4 @@ pub const substr = @import("neet/substring.zig").substr;
 pub const last_word_len = @import("neet/last_word_len.zig").last_word_len;
 pub const ResTwoSum = @import("neet/two_sum.zig").ResTwoSum;
 pub const two_sum = @import("neet/two_sum.zig").two_sum;
+pub const longest_prefix = @import("neet/longest_prefix.zig").longest_prefix;

@@ -55,7 +55,9 @@ pub fn anagram(allocator: Allocator, s1: []const u8, s2: []const u8) !bool {
     return true;
 }
 
-fn sort_lowercase_string(allocator: Allocator, s: []const u8) ![]const u8 {
+/// Transform a string to lowercase and then sort.
+/// NOTE: Caller owns the string and therefore must deallocate it
+pub fn sort_lowercase_string(allocator: Allocator, s: []const u8) ![]const u8 {
     var sorted = try std.ascii.allocLowerString(allocator, s);
     // var sorted = try ArrayList(u8).initCapacity(allocator, s.len);
     // sorted.appendSliceAssumeCapacity(lowercase);

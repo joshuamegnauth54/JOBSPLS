@@ -1,0 +1,13 @@
+{
+    "tasks": {},
+    "lint": {
+        "include": [
+            "src/"
+        ],
+        "rules": {
+            "tags": [
+                "recommended"
+            ]
+        }
+    }
+}

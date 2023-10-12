@@ -53,17 +53,23 @@ test "group anagrams correct groups" {
     const words = [_][]const u8{ "tacos", "star", "angle", "angel", "coast", "asleep", "introduces", "please", "arts", "space", "cats", "dog", "god", "rosiest", "resort", "stories" };
 
     const groups = try group_anagrams(std.testing.allocator, &words);
-    defer std.testing.allocator.destroy(groups.ptr);
 
     for (groups) |vec| {
+        // std.debug.print("Anagram group: {}\n", .{vec});
         vec.deinit();
+    }
+
+    if (groups.len > 0) {
+        std.testing.allocator.destroy(groups.ptr);
     }
 }
 
 test "group anagrams empty" {
     const empty = [0][]const u8{};
     const groups = try group_anagrams(std.testing.allocator, &empty);
-    defer std.testing.allocator.destroy(groups.ptr);
 
-    expectEqual(groups.len, 0);
+    try expectEqual(groups.len, 0);
+    if (groups.len > 0) {
+        std.testing.allocator.destroy(groups.ptr);
+    }
 }

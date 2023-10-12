@@ -2,8 +2,9 @@ const std = @import("std");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 const expectEqualStrings = std.testing.expectEqualStrings;
+const expectEqual = std.testing.expectEqual;
 
-pub fn longest_prefix(allocator: Allocator, words: [][]const u8) !?ArrayList(u8) {
+pub fn longest_prefix(allocator: Allocator, words: []const []const u8) !?ArrayList(u8) {
     if (words.len == 0) {
         return null;
     }
@@ -16,13 +17,15 @@ pub fn longest_prefix(allocator: Allocator, words: [][]const u8) !?ArrayList(u8)
     // the middle words don't matter
     // Ex: ["goober", "good", "goofy", "gopher"]
     // ^ Only the smallest and largest words need to be checked
-    var sorted = words;
-    std.sort.sort([]const u8, sorted, {}, std.sort.desc([]const u8));
+    var sorted = try ArrayList([]const u8).initCapacity(allocator, words.len);
+    defer sorted.deinit();
+    sorted.appendSliceAssumeCapacity(words);
+    std.sort.sort([]const u8, sorted.items, {}, desc_str);
 
     // Shortest and longest words
     // The actual lengths don't matter
-    const left = sorted[0];
-    const right = sorted[sorted.len - 1];
+    const left = sorted.items[0];
+    const right = sorted.items[sorted.items.len - 1];
 
     // Length of the shorter slice
     const short_len = @min(left.len, right.len);
@@ -44,12 +47,26 @@ pub fn longest_prefix(allocator: Allocator, words: [][]const u8) !?ArrayList(u8)
     return null;
 }
 
+fn desc_str(_: void, a: []const u8, b: []const u8) bool {
+    var i: usize = 0;
+    while (a[i] < b[i] and i < a.len and i < b.len) : (i += 1) {}
+    // Traversing all of `a` means a < b
+    return i == a.len;
+}
+
 test "longest prefix found" {
     const words = [_][]const u8{ "good", "goofy", "goober", "gopher", "going", "gone" };
     var result = try longest_prefix(std.testing.allocator, &words);
 
     if (result) |*prefix| {
         const actual = prefix.toOwnedSlice();
+        defer std.testing.allocator.destroy(actual.ptr);
         try expectEqualStrings("go", actual);
     }
+}
+
+test "longest prefix none" {
+    const empty = [0][]const u8{};
+    var result = try longest_prefix(std.testing.allocator, &empty);
+    try expectEqual(result, null);
 }

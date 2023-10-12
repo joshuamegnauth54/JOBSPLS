@@ -6,14 +6,14 @@
 #include <sys/types.h>
 
 struct Vector {
-    // Array of size `len` to any type, T
-    u_int8_t const* data;
     // Capacity of `data` in terms of how many T may be stored
     size_t capacity;
     // Number of type T stored in `data` (a.k.a. length)
     size_t pos;
     // Size of type T
     size_t const data_size;
+    // Array of size `len` to any type, T
+    u_int8_t* data;
 };
 
 enum VectorErrors {
@@ -43,7 +43,7 @@ void vec_free(Vector* const vec);
 void vec_free_with(Vector* const vec, void dfree(void*));
 
 // Map T => U
-Vector* vec_map(const Vector* const vec, const size_t data_size, void* map(void*));
+Vector* vec_map(Vector const* const vec, size_t const data_size, void* map(void*));
 
 void vec_push(Vector* const vec, void const* const value);
 

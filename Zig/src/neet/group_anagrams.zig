@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const StringHashMap = std.StringHashMap;
 const ArrayList = std.ArrayList;
+const expectEqual = std.testing.expectEqual;
 
 const sort_lowercase_string = @import("anagram.zig").sort_lowercase_string;
 
@@ -57,4 +58,12 @@ test "group anagrams correct groups" {
     for (groups) |vec| {
         vec.deinit();
     }
+}
+
+test "group anagrams empty" {
+    const empty = [0][]const u8{};
+    const groups = try group_anagrams(std.testing.allocator, &empty);
+    defer std.testing.allocator.destroy(groups.ptr);
+
+    expectEqual(groups.len, 0);
 }

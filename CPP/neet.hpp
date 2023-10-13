@@ -4,6 +4,7 @@
 #include "neet/anagram.hpp"
 #include "neet/concat.hpp"
 #include "neet/containsduplicate.hpp"
+#include "neet/kth_largest.hpp"
 #include "neet/last_word_len.hpp"
 
 #endif

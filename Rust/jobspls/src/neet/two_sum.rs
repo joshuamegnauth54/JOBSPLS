@@ -1,6 +1,10 @@
-use std::collections::HashMap;
+use num::{CheckedSub, Integer};
+use std::{collections::HashMap, hash::Hash};
 
-pub fn two_sum(nums: &[i32], target: i32) -> Option<(i32, i32)> {
+pub fn two_sum<I>(nums: &[I], target: I) -> Option<(I, I)>
+where
+    I: Integer + CheckedSub + Hash + Copy,
+{
     let mut complements: HashMap<_, _> = HashMap::new();
 
     // Iterative because it's straightforward to short circuit
@@ -9,7 +13,7 @@ pub fn two_sum(nums: &[i32], target: i32) -> Option<(i32, i32)> {
             return Some((num, nums[i]));
         }
 
-        if let Some(complement) = target.checked_sub(num) {
+        if let Some(complement) = target.checked_sub(&num) {
             complements.entry(complement).or_insert(i);
         }
     }

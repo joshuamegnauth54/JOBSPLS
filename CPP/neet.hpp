@@ -6,5 +6,6 @@
 #include "neet/containsduplicate.hpp"
 #include "neet/kth_largest.hpp"
 #include "neet/last_word_len.hpp"
+#include "neet/group_anagrams.hpp"
 
 #endif

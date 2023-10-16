@@ -7,6 +7,7 @@ mod last_word_len;
 mod longest_prefix;
 mod substring;
 mod two_sum;
+mod valid_palindrome;
 
 pub use anagram::{anagram, anagram_alt};
 pub use concat::concat_slice;
@@ -17,3 +18,4 @@ pub use last_word_len::last_word_len;
 pub use longest_prefix::longest_prefix;
 pub use substring::substring;
 pub use two_sum::two_sum;
+pub use valid_palindrome::valid_palindrome;

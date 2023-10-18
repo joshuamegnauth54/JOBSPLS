@@ -4,7 +4,7 @@ const PriorityQueue = std.PriorityQueue;
 const Order = std.math.Order;
 const expectEqual = std.testing.expectEqual;
 
-pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k: usize, comptime compfunc: ?fn (void, T, T) Order) !T {
+pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k: usize, comptime compfunc: ?fn (void, T, T) Order) !?T {
     const compfunc_def = comptime switch (@typeInfo(T)) {
         .Int, .ComptimeInt, .Float, .ComptimeFloat => opcomp: {
             if (compfunc) |f| {
@@ -29,7 +29,7 @@ pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k:
 
     // Logic here is to shunt all of the items into a priority queue which is ordered
     // Next, just pop the largest k values till I reach the required item
-    var queue = PriorityQueue(T, {}, compfunc_def).init(allocator, void);
+    var queue = PriorityQueue(T, void, compfunc_def).init(allocator, void);
     defer queue.deinit();
     try queue.ensureTotalCapacity(haystack.len);
     try queue.addSlice(haystack);

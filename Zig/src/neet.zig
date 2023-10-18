@@ -19,5 +19,6 @@ pub const valid_sudoku = @import("neet/valid_sudoku.zig").valid_sudoku;
 // pub const encode_str = @import("neet/")
 // pub const logger_rate_limit =
 // pub const ranked_voting
-// pub const consec_sequence
+pub const consec_sequence = @import("neet/consec_sequence.zig").consec_sequence;
 pub const valid_palindrome = @import("neet/valid_palindrome.zig").valid_palindrome;
+// pub const three_sum

@@ -1,13 +1,10 @@
 use std::num::NonZeroI32;
 
-use num::Integer;
+use num::{Integer, NumCast};
 
 /// Product of an array sans the element at `i`.
 ///
 /// # WARNING: I barely understand this stupid question.
-///
-/// # Panics
-/// Panics if `i` is out of range for `nums`.
 #[allow(clippy::needless_lifetimes)]
 pub fn prod_sans_self_div<'slice>(nums: &'slice [i32]) -> impl Iterator<Item = i32> + 'slice {
     // Product of entire array
@@ -18,10 +15,23 @@ pub fn prod_sans_self_div<'slice>(nums: &'slice [i32]) -> impl Iterator<Item = i
         .map(|(prod, orig)| prod / NonZeroI32::new(orig).map(NonZeroI32::get).unwrap_or(1))
 }
 
-// pub fn prod_sans_self<I>(nums: &[I], i: usize) -> Vec<I>
-// where I: Integer + Copy
-// {
-//     nums.iter().scan(1, |state, val| {
+/// Cumulative product shifted over by one
+pub fn cumulative_shift<'slice, I>(nums: &'slice [I]) -> impl Iterator<Item = I> + 'slice
+where
+    I: Integer + Copy + NumCast + std::ops::Mul<I, Output = I>,
+{
+    nums.iter()
+        .scan((num::cast::<i32, I>(1).unwrap(), 1), |(state, _), &val| {
+            // State is the current sum up to this point
+            // The value to yield is always one behind which effectively skips the i-th value
+            Some((*state * val, *state))
+        })
+        .map(|(_, to_yield)| to_yield)
+}
 //
-//     })
+// pub fn prod_sans_self<I>(nums: &[I]) -> Vec<I>
+// where
+//     I: Integer + Copy + NumCast + std::ops::Mul<I, Output = I>,
+// {
+//     cumulative_shift(nums).zip(cumulative_shift(nums)).product()
 // }

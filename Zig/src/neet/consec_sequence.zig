@@ -7,34 +7,59 @@ const Order = std.math.Order;
 const expectEqual = std.testing.expectEqual;
 
 /// Start and end positions of each consecutive sequence for a sorted slice
+/// As these are indices, 0 is the lowest value and `end` is exclusive
 pub const SeqPos = struct { start: usize, end: usize };
 
 /// All consecutive sequences of `haystack`
 ///
 /// Caller owns the returned slice and memory.
-pub fn consec_sequence(comptime T: type, allocator: Allocator, haystack: []const T) !?[]u8 {
+pub fn consec_sequence_heap(comptime T: type, allocator: Allocator, haystack: []const T) !?[]SeqPos {
     if (haystack.len == 0) {
         return null;
     }
 
     // Too lazy to support non-ints, but I also want to support all ints
-    comptime if (!(@typeInfo(T) != .Int or @typeInfo(T) != .ComptimeInt)) {
+    comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("Only integers are supported");
     };
 
     // All sequences
-    var sequences = PriorityQueue(SeqPos, void, comp_len).init(allocator);
+    var sequences = PriorityQueue(SeqPos, void, comp_len).init(allocator, {});
     defer sequences.deinit();
 
     // Sort haystack to ease finding consecutive sequences since
     // i + 1 is checked for being consecutive to element i
-    var sortedhay = try ArrayList(T).initCapacity(haystack.len);
+    var sortedhay = try ArrayList(T).initCapacity(allocator, haystack.len);
     defer sortedhay.deinit();
     sortedhay.appendSliceAssumeCapacity(haystack);
-    std.sort.sort(T, sortedhay.items, void, std.sort.asc(T));
+    std.sort.sort(T, sortedhay.items, {}, std.sort.asc(T));
 
     var i: usize = 0;
-    while (i < haystack.len - 1) : (i += 1) {}
+    var seq = SeqPos{ .start = i, .end = i };
+    while (i < haystack.len - 1) : (i += 1) {
+        const current = sortedhay.items[i];
+        const expected = current + 1;
+        const next = sortedhay.items[i + 1];
+
+        // End of the sequence
+        if (next != expected) {
+            seq.end = i + 1;
+            try sequences.add(seq);
+            // Reset sequence to the next index
+            seq.start = i + 1;
+            seq.end = i + 1;
+        }
+    } else {
+        seq.end = i + 1;
+        try sequences.add(seq);
+    }
+
+    // Append the elements in order to a vector
+    var seq_ordered = try ArrayList(SeqPos).initCapacity(allocator, sequences.count());
+    while (sequences.removeOrNull()) |sequence| {
+        seq_ordered.appendAssumeCapacity(sequence);
+    }
+    return seq_ordered.toOwnedSlice();
 }
 
 pub fn consec_sequence_set(comptime T: type, allocator: Allocator, haystack: []const T) !?[]T {
@@ -42,7 +67,7 @@ pub fn consec_sequence_set(comptime T: type, allocator: Allocator, haystack: []c
         return null;
     }
 
-    comptime if (!(@typeInfo(T) != .Int or @typeInfo(T) != .ComptimeInt)) {
+    comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("Only integers are supported");
     };
 
@@ -113,7 +138,7 @@ fn comp_len(_: void, a: SeqPos, b: SeqPos) Order {
 }
 
 test "consecutive sequence set works" {
-    const haystack = [_]u8{ 0, 5, 3, 2, 10, 9, 1, 8, 6, 7 };
+    const haystack = [_]u8{ 0, 5, 3, 2, 10, 9, 1, 8, 6, 7, 4 };
     const res = try consec_sequence_set(u8, std.testing.allocator, &haystack);
 
     if (res) |seq| {
@@ -124,5 +149,18 @@ test "consecutive sequence set works" {
         std.testing.allocator.destroy(seq.ptr);
     } else {
         @panic("Longest sequence should be found");
+    }
+}
+
+test "consecutive sequence queue works" {
+    const haystack = [_]u8{ 0, 5, 3, 2, 10, 9, 1, 8, 6, 7, 4 };
+    const res = try consec_sequence_heap(u8, std.testing.allocator, &haystack);
+
+    if (res) |sequences| {
+        defer std.testing.allocator.destroy(sequences.ptr);
+        try expectEqual(sequences.len, 1);
+        const seq = sequences[0];
+        const len = seq.end - seq.start;
+        try expectEqual(haystack.len, len);
     }
 }

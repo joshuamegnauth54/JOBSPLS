@@ -1,4 +1,5 @@
 mod anagram;
+mod consec_sequence;
 mod concat;
 mod containsdupes;
 mod group_anagrams;
@@ -21,3 +22,4 @@ pub use prod_sans_self::prod_sans_self;
 pub use substring::substring;
 pub use two_sum::two_sum;
 pub use valid_palindrome::valid_palindrome;
+pub use consec_sequence::{consec_sequence_set};

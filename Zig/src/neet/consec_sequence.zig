@@ -78,8 +78,8 @@ pub fn consec_sequence_set(comptime T: type, allocator: Allocator, haystack: []c
     // Fill up the map while accounting for dupes
     for (haystack) |val| {
         var entry = try all_nums.getOrPut(val);
-        if (entry.found_existing) {
-            entry.value_ptr.* += 0;
+        if (!entry.found_existing) {
+            entry.value_ptr.* = 0;
         }
         entry.value_ptr.* += 1;
     }
@@ -142,13 +142,54 @@ test "consecutive sequence set works" {
     const res = try consec_sequence_set(u8, std.testing.allocator, &haystack);
 
     if (res) |seq| {
+        try expectEqual(haystack.len, seq.len);
+
         var i: u8 = 0;
         while (i < seq.len) : (i += 1) {
-            try expectEqual(seq[i], i);
+            try expectEqual(i, seq[i]);
         }
         std.testing.allocator.destroy(seq.ptr);
     } else {
         @panic("Longest sequence should be found");
+    }
+}
+
+test "consecutive sequence set with multiple seqs" {
+    const haystack = [_]u8{ 50, 60, 5, 3, 2, 16, 1, 4, 0, 15, 14 };
+    const res = try consec_sequence_set(u8, std.testing.allocator, &haystack);
+
+    if (res) |seq| {
+        defer std.testing.allocator.destroy(seq.ptr);
+
+        try expectEqual(@intCast(@TypeOf(seq.len), 6), seq.len);
+
+        var expected: u8 = 0;
+        for (seq) |num| {
+            try expectEqual(expected, num);
+            expected += 1;
+        }
+    } else {
+        @panic("Longest sequence should be found");
+    }
+}
+
+test "consecutive sequence set empty" {
+    const haystack = [0]u8{};
+    const res = try consec_sequence_set(u8, std.testing.allocator, &haystack);
+    try expectEqual(res, null);
+}
+
+test "consecutive sequence set single item" {
+    const target: u8 = 14;
+    const haystack = [1]u8{target};
+    const res = try consec_sequence_set(u8, std.testing.allocator, &haystack);
+
+    if (res) |seq| {
+        defer std.testing.allocator.destroy(seq.ptr);
+        try expectEqual(@intCast(@TypeOf(seq.len), 1), seq.len);
+        try expectEqual(target, seq[0]);
+    } else {
+        @panic("Single item sequence should be found");
     }
 }
 

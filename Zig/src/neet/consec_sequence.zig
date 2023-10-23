@@ -199,9 +199,26 @@ test "consecutive sequence queue works" {
 
     if (res) |sequences| {
         defer std.testing.allocator.destroy(sequences.ptr);
-        try expectEqual(sequences.len, 1);
+        try expectEqual(@intCast(usize, 1), sequences.len);
         const seq = sequences[0];
         const len = seq.end - seq.start;
         try expectEqual(haystack.len, len);
+    } else {
+        @panic("Consecutive sequence should be found");
+    }
+}
+
+test "consecutive sequence queue single item" {
+    const target = 42;
+    const haystack = [1]u8{target};
+    const res = try consec_sequence_heap(u8, std.testing.allocator, &haystack);
+
+    if (res) |seqs| {
+        defer std.testing.allocator.destroy(seqs.ptr);
+        try expectEqual(@intCast(usize, 1), seqs.len);
+        const seq = seqs[0];
+        try expectEqual(@intCast(usize, 1), seq.end - seq.start);
+    } else {
+        @panic("Consecutive sequence should be found");
     }
 }

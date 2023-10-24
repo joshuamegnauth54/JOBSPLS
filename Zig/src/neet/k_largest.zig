@@ -10,7 +10,7 @@ pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k:
             if (compfunc) |f| {
                 break :opcomp f;
             } else {
-                break :opcomp std.sort.desc(T);
+                break :opcomp int_cmp(T);
             }
         },
         else => needcomp: {
@@ -29,7 +29,7 @@ pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k:
 
     // Logic here is to shunt all of the items into a priority queue which is ordered
     // Next, just pop the largest k values till I reach the required item
-    var queue = PriorityQueue(T, void, compfunc_def).init(allocator, void);
+    var queue = PriorityQueue(T, void, compfunc_def).init(allocator, {});
     defer queue.deinit();
     try queue.ensureTotalCapacity(haystack.len);
     try queue.addSlice(haystack);
@@ -46,9 +46,18 @@ pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k:
     return queue.removeOrNull();
 }
 
+// Wrapper to compare two integers of the same type
+fn int_cmp(comptime T: type) fn (void, T, T) Order {
+    return struct {
+        fn inner(_: void, a: T, b: T) Order {
+            return std.math.order(a, b);
+        }
+    }.inner;
+}
+
 test "kth value exists" {
     const haystack = [_]u8{ 28, 42, 24, 14, 64, 7 };
-    const res = k_largest(u8, std.testing.allocator, &haystack, 3, null);
+    const res = try k_largest(u8, std.testing.allocator, &haystack, 3, null);
     if (res) |target| {
         try expectEqual(target, 28);
     } else {
@@ -58,6 +67,6 @@ test "kth value exists" {
 
 test "kth > len short circuits" {
     const haystack = [0]u8{};
-    const res = k_largest(u8, std.testing.allocator, &haystack, 10, null);
+    const res = try k_largest(u8, std.testing.allocator, &haystack, 10, null);
     try expectEqual(res, null);
 }

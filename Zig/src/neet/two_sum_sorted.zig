@@ -1,4 +1,5 @@
 const std = @import("std");
+const expectEqual = std.testing.expectEqual;
 
 const ResTwoSum = @import("two_sum.zig").ResTwoSum;
 
@@ -70,4 +71,51 @@ pub fn two_sum_sorted_pointer(comptime T: type, haystack: []T, target: T) ?ResTw
 
     // Pair doesn't exist if loop ends
     return null;
+}
+
+fn test_two_sum(comptime T: type, haystack: []T, target: T, comptime two_sum: fn (comptime T: type, haystack: []T, target: T) ?ResTwoSum) void {
+    const res = two_sum(T, haystack, target);
+    if (res) |indices| {
+        const lower = haystack[indices.i];
+        const upper = haystack[indices.j];
+        try expectEqual(target, upper - lower);
+    } else {
+        @panic("Answer should be found");
+    }
+}
+
+test "two sum sorted pointers example 1" {
+    const haystack = [_]u8{ 2, 7, 11, 15 };
+    const target = 9;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_pointer);
+}
+
+test "two sum sorted binary example 1" {
+    const haystack = [_]u8{ 2, 7, 11, 15 };
+    const target = 9;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_search);
+}
+
+test "two sum sorted pointers example 2" {
+    const haystack = [_]u8{ 2, 3, 4 };
+    const target = 6;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_pointer);
+}
+
+test "two sum sorted binary example 2" {
+    const haystack = [_]u8{ 2, 3, 4 };
+    const target = 6;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_search);
+}
+
+test "two sum sorted pointers example 3" {
+    const haystack = [_]i8{ -1, 0 };
+    const target = -1;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_pointer);
+}
+
+test "two sum sorted binary example 3" {
+    const haystack = [_]i8{ -1, 0 };
+    const target = -1;
+    test_two_sum(u8, &haystack, target, two_sum_sorted_search);
 }

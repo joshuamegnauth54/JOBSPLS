@@ -10,7 +10,7 @@ using std::vector;
 
 #include <iostream>
 
-vector<int32_t> replace_vals_right(span<int32_t> nums) {
+vector<int32_t> replace_vals_right(span<const int32_t> nums) {
   if (nums.size() < 1) {
     return vector<int32_t>(nums.begin(), nums.end());
   }

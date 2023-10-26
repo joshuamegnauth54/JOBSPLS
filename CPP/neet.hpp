@@ -9,5 +9,6 @@
 #include "neet/last_word_len.hpp"
 #include "neet/prod_sans_self.hpp"
 #include "neet/replace_vals_right.hpp"
+#include "neet/valid_palindrome.hpp"
 
 #endif

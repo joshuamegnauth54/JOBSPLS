@@ -33,6 +33,7 @@ Vector* vec_new(size_t const data_size);
 
 Vector* vec_with_capacity(size_t const data_size, size_t const cap);
 
+__attribute__((nonnull))
 void vec_free(Vector* const vec);
 
 // Delete a Vector and call a function on each value for clean up.
@@ -43,14 +44,19 @@ void vec_free(Vector* const vec);
 void vec_free_with(Vector* const vec, void dfree(void*));
 
 // Map T => U
+__attribute__((nonnull))
 Vector* vec_map(Vector const* const vec, size_t const data_size, void* map(void*));
 
+__attribute__((nonnull))
 void vec_push(Vector* const vec, void const* const value);
 
+__attribute__((nonnull))
 void* vec_pop(Vector* const vec);
 
+__attribute__((nonnull))
 void* vec_get(Vector const* const vec, size_t const index);
 
+__attribute__((nonnull))
 void* vec_remove(Vector* const vec, size_t const index);
 
 #endif

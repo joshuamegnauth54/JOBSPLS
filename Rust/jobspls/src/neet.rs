@@ -1,6 +1,6 @@
 mod anagram;
-mod consec_sequence;
 mod concat;
+mod consec_sequence;
 mod containsdupes;
 mod group_anagrams;
 mod kth_largest;
@@ -9,10 +9,12 @@ mod longest_prefix;
 mod prod_sans_self;
 mod substring;
 mod two_sum;
+mod two_sum_ordered;
 mod valid_palindrome;
 
 pub use anagram::{anagram, anagram_alt};
 pub use concat::concat_slice;
+pub use consec_sequence::consec_sequence_set;
 pub use containsdupes::contains_dupes;
 pub use group_anagrams::group_anagrams;
 pub use kth_largest::kth_largest;
@@ -21,5 +23,5 @@ pub use longest_prefix::longest_prefix;
 pub use prod_sans_self::prod_sans_self;
 pub use substring::substring;
 pub use two_sum::two_sum;
+pub use two_sum_ordered::two_sum_ordered;
 pub use valid_palindrome::valid_palindrome;
-pub use consec_sequence::{consec_sequence_set};

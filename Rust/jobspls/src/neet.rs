@@ -25,3 +25,10 @@ pub use substring::substring;
 pub use two_sum::two_sum;
 pub use two_sum_ordered::two_sum_ordered;
 pub use valid_palindrome::valid_palindrome;
+
+// Utilities
+#[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub struct SeqPos {
+    pub i: usize,
+    pub j: usize,
+}

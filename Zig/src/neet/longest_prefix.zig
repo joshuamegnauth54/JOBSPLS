@@ -4,7 +4,8 @@ const Allocator = std.mem.Allocator;
 const expectEqualStrings = std.testing.expectEqualStrings;
 const expectEqual = std.testing.expectEqual;
 
-pub fn longest_prefix(allocator: Allocator, words: []const []const u8) !?ArrayList(u8) {
+/// Longest, case sensitive prefix of all strings in `words`.
+pub fn longest_prefix(allocator: Allocator, words: []const []const u8) !?[]const u8 {
     if (words.len == 0) {
         return null;
     }
@@ -41,7 +42,7 @@ pub fn longest_prefix(allocator: Allocator, words: []const []const u8) !?ArrayLi
         var prefix = try ArrayList(u8).initCapacity(allocator, prefix_len);
         prefix.appendSliceAssumeCapacity(left[0..prefix_len]);
 
-        return prefix;
+        return prefix.toOwnedSlice();
     }
 
     return null;
@@ -58,15 +59,36 @@ test "longest prefix found" {
     const words = [_][]const u8{ "good", "goofy", "goober", "gopher", "going", "gone" };
     var result = try longest_prefix(std.testing.allocator, &words);
 
-    if (result) |*prefix| {
-        const actual = prefix.toOwnedSlice();
+    if (result) |actual| {
         defer std.testing.allocator.destroy(actual.ptr);
         try expectEqualStrings("go", actual);
+    } else {
+        @panic("Common prefix `go` should be found");
     }
 }
 
 test "longest prefix none" {
     const empty = [0][]const u8{};
     var result = try longest_prefix(std.testing.allocator, &empty);
-    try expectEqual(result, null);
+    const expected: @TypeOf(result) = null;
+    try expectEqual(expected, result);
+}
+
+test "longest prefix example 1" {
+    const words = [_][]const u8{ "flower", "flow", "flight" };
+    var result = try longest_prefix(std.testing.allocator, &words);
+
+    if (result) |actual| {
+        defer std.testing.allocator.destroy(actual.ptr);
+        try expectEqualStrings("fl", actual);
+    } else {
+        @panic("Common prefix `fl` should be found");
+    }
+}
+
+test "longest prefix example 2" {
+    const words = [_][]const u8{ "dog", "racecar", "car" };
+    var result = try longest_prefix(std.testing.allocator, &words);
+    const expected: @TypeOf(result) = null;
+    try expectEqual(expected, result);
 }

@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+// Growable, managed slice (array).
+//
+// Some inspiration from: https://blog.phundrak.com/writing-dynamic-vector-c/
 struct Vector {
     // Capacity of `data` in terms of how many T may be stored
     size_t capacity;
@@ -31,6 +34,7 @@ enum VectorErrors {
 //               3. A struct is the size of the struct value
 Vector* vec_new(size_t const data_size);
 
+// Construct a Vector that holds at least `cap` items before allocating
 Vector* vec_with_capacity(size_t const data_size, size_t const cap);
 
 __attribute__((nonnull))
@@ -38,14 +42,15 @@ void vec_free(Vector* const vec);
 
 // Delete a Vector and call a function on each value for clean up.
 //
-// NOTE: dfree should be cognizant of type T as each value is passed as is.
-// T may be the value of pointers or structs by value.
-// The caller should know the type.
-void vec_free_with(Vector* const vec, void dfree(void*));
+// NOTE: `drop` is called on every element of the vector to clean up resources.
+// Ownership is transferred to `drop`.
+// Therefore, `drop` must deallocate memory if necessary.
+__attribute__((nonnull))
+void vec_free_with(Vector* const vec, void drop(void*));
 
 // Map T => U
 __attribute__((nonnull))
-Vector* vec_map(Vector const* const vec, size_t const data_size, void* map(void*));
+Vector* vec_map(Vector const* const vec, size_t const U_data_size, void* map(void*));
 
 __attribute__((nonnull))
 void vec_push(Vector* const vec, void const* const value);
@@ -58,5 +63,24 @@ void* vec_get(Vector const* const vec, size_t const index);
 
 __attribute__((nonnull))
 void* vec_remove(Vector* const vec, size_t const index);
+
+// Resize vector to hold N items
+// * N should be > 0
+// * N < vector length discards items
+// * N > vector length reserves capacity
+//
+// Discarded items aren't cleaned up in any way. They just go poof.
+__attribute__((nonnull))
+bool vec_resize(Vector* const self, size_t const n_items);
+
+// Shrink vector so that it holds exactly the capacity.
+__attribute__((nonnull))
+bool vec_shrink(Vector* const self);
+
+// Reserve space for `n_items` total elements.
+//
+// `n_items` should be > 0 and > capacity.
+__attribute__((nonnull))
+bool vec_reserve(Vector* const self, size_t const n_items);
 
 #endif

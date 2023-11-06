@@ -86,7 +86,6 @@ pub fn three_sum_set(comptime T: type, allocator: Allocator, haystack: []const T
             var diff: T = undefined;
             // If T is unsigned, sub may overflow
             if (!@subWithOverflow(T, target, sum, &diff)) {
-                // std.debug.print("sum: {}, diff: {}\n", .{ sum, diff });
                 // Check for the third number
                 if (all_nums.getPtr(diff)) |diff_idxs| {
                     // Ensure diff_idxs is not i or j
@@ -94,7 +93,6 @@ pub fn three_sum_set(comptime T: type, allocator: Allocator, haystack: []const T
                         var triplet = [3]T{ haysort.items[i], haysort.items[j], haysort.items[k] };
                         // Sort for stable hashes
                         sort(T, &triplet, {}, asc(T));
-                        std.debug.print("Sum: {} Diff: {} Triplet: {} {} {} and indices: {} {} {}\n", .{ sum, diff, haysort.items[i], haysort.items[j], haysort.items[k], i, j, k });
                         try sums.put(triplet, {});
                     }
                 }
@@ -136,6 +134,22 @@ test "3sum set example 1" {
     const haystack = [_]i8{ -1, 0, 1, 2, -1, -4 };
     const target = 0;
     const expected = [_][3]i8{ [3]i8{ -1, -1, 2 }, [3]i8{ -1, 0, 1 } };
+
+    try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+}
+
+test "3sum set example 2" {
+    const haystack = [_]i8{ 0, 1, 1 };
+    const target = 0;
+    const expected = [0][3]i8{};
+
+    try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+}
+
+test "3sum set example 3" {
+    const haystack = [_]i8{ 0, 0, 0 };
+    const target = 0;
+    const expected = [1][3]i8{[3]i8{ 0, 0, 0 }};
 
     try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
 }

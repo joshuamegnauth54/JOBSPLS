@@ -6,12 +6,12 @@ using std::vector;
 
 namespace {
 TEST(ContainsDuplicatesTest, HasDupes) {
-  auto dupes = {14, 28, 42, 14, 28, 42, 42, 24, 24};
-  EXPECT_EQ(true, containsDuplicate(&dupes));
+  vector<int> dupes({14, 28, 42, 14, 28, 42, 42, 24, 24});
+  EXPECT_EQ(true, containsDuplicate(dupes));
 }
 
 TEST(ContainsDuplicatesTest, NoDupes) {
-  auto no_dupes = {14, 28, 42};
-  EXPECT_EQ(false, containsDuplicate(&no_dupes));
+  vector<int> no_dupes({14, 28, 42});
+  EXPECT_EQ(false, containsDuplicate(no_dupes));
 }
 } // namespace

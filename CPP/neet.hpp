@@ -7,6 +7,7 @@
 #include "neet/group_anagrams.hpp"
 #include "neet/kth_largest.hpp"
 #include "neet/last_word_len.hpp"
+#include "neet/longest_prefix.hpp"
 #include "neet/prod_sans_self.hpp"
 #include "neet/replace_vals_right.hpp"
 #include "neet/two_sum.hpp"

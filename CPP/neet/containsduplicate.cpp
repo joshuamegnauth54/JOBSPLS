@@ -1,10 +1,10 @@
-#include <set>
-#include <vector>
+#include <span>
+#include <unordered_set>
 
-using std::set;
-using std::vector;
+using std::span;
+using std::unordered_set;
 
-bool containsDuplicate(vector<int> const &nums) {
-  set<int> dedupe(nums.cbegin(), nums.cend());
-  return dedupe.size() == nums.size();
+bool containsDuplicate(const span<const int> nums) {
+  unordered_set<int> dedupe(nums.cbegin(), nums.cend());
+  return dedupe.size() != nums.size();
 }

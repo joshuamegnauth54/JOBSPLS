@@ -3,6 +3,7 @@ const Allocator = std.mem.Allocator;
 const StringHashMap = std.StringHashMap;
 const ArrayList = std.ArrayList;
 const expectEqual = std.testing.expectEqual;
+const expectEqualSlices = std.testing.expectEqualSlices;
 
 const sort_lowercase_string = @import("anagram.zig").sort_lowercase_string;
 
@@ -48,19 +49,41 @@ pub fn group_anagrams(allocator: Allocator, words: []const []const u8) ![]ArrayL
     return groups_out;
 }
 
-//FIXME:make test suck less
-test "group anagrams correct groups" {
-    const words = [_][]const u8{ "tacos", "star", "angle", "angel", "coast", "asleep", "introduces", "please", "arts", "space", "cats", "dog", "god", "rosiest", "resort", "stories" };
-
-    const groups = try group_anagrams(std.testing.allocator, &words);
-
+fn group_anagram_deinit(allocator: Allocator, groups: []ArrayList([]const u8)) void {
     for (groups) |vec| {
-        // std.debug.print("Anagram group: {}\n", .{vec});
         vec.deinit();
     }
 
     if (groups.len > 0) {
-        std.testing.allocator.destroy(groups.ptr);
+        allocator.destroy(groups.ptr);
+    }
+}
+
+fn group_anagram_print(groups: []ArrayList([]const u8)) void {
+    for (groups) |*words| {
+        for (words.*.items) |word| {
+            std.debug.print("{s} ", .{word});
+        }
+
+        std.debug.print("\n\n", .{});
+    }
+}
+
+test "group anagrams correct groups" {
+    const words = [_][]const u8{ "tacos", "star", "angle", "angel", "coast", "asleep", "introduces", "please", "arts", "space", "cats", "dog", "god", "rosiest", "resort", "stories" };
+
+    const groups = try group_anagrams(std.testing.allocator, &words);
+    defer group_anagram_deinit(std.testing.allocator, groups);
+
+    // FIXME: Zig format mangles this code...
+    const expected = [10][]const []const u8{ &[2][]const u8{ "angle", "angel" }, &[1][]const u8{"introduces"}, &[1][]const u8{"resort"}, &[2][]const u8{ "asleep", "please" }, &[2][]const u8{ "rosiest", "stories" }, &[2][]const u8{ "tacos", "coast" }, &[1][]const u8{"cats"}, &[2][]const u8{ "star", "arts" }, &[2][]const u8{ "dog", "god" }, &[1][]const u8{"space"} };
+
+    try expectEqual(expected.len, groups.len);
+    group_anagram_print(groups);
+
+    var i: usize = 0;
+    while (i < expected.len) : (i += 1) {
+        try expectEqualSlices([]const u8, expected[i], groups[i].items);
     }
 }
 
@@ -69,7 +92,5 @@ test "group anagrams empty" {
     const groups = try group_anagrams(std.testing.allocator, &empty);
 
     try expectEqual(groups.len, 0);
-    if (groups.len > 0) {
-        std.testing.allocator.destroy(groups.ptr);
-    }
+    group_anagram_deinit(std.testing.allocator, groups);
 }

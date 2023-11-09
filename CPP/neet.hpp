@@ -3,6 +3,7 @@
 
 #include "neet/anagram.hpp"
 #include "neet/concat.hpp"
+#include "neet/consec_sequence.hpp"
 #include "neet/containsduplicate.hpp"
 #include "neet/group_anagrams.hpp"
 #include "neet/kth_largest.hpp"

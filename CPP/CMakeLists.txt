@@ -23,6 +23,7 @@ add_library(
 
 add_executable(
     jobspls_tests
+    tests/anagram_test.cpp
     tests/containsdupe_test.cpp
     tests/longest_prefix_test.cpp
 )

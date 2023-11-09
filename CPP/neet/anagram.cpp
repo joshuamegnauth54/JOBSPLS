@@ -1,16 +1,17 @@
-#include "anagram.hpp"
 #include <cstddef>
-#include <map>
-#include <string_view>
 #include <stdexcept>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
 
-using std::map;
+#include "anagram.hpp"
+
 using std::pair;
 using std::size_t;
 using std::string_view;
+using std::unordered_map;
 
-void fill_map(string_view s, map<char, size_t> &counts) {
+void fill_map(const string_view s, unordered_map<char, size_t> &counts) {
   for (auto ch : s) {
     const auto &[node, success] = counts.insert(pair(ch, 1));
     // Failed insertion = ch already in the map
@@ -20,13 +21,13 @@ void fill_map(string_view s, map<char, size_t> &counts) {
   }
 }
 
-bool anagram(string_view s1, string_view s2) {
+bool anagram(const string_view s1, const string_view s2) {
   if (s1.size() != s1.size()) {
     return false;
   }
 
-  map<char, size_t> s1_map;
-  map<char, size_t> s2_map;
+  unordered_map<char, size_t> s1_map;
+  unordered_map<char, size_t> s2_map;
 
   fill_map(s1, s1_map);
   fill_map(s2, s2_map);

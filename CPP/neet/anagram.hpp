@@ -3,6 +3,6 @@
 
 #include <string_view>
 
-bool anagram(std::string_view s1, std::string_view s2);
+bool anagram(const std::string_view s1, const std::string_view s2);
 
 #endif

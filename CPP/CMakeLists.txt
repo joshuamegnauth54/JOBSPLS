@@ -25,6 +25,7 @@ add_executable(
     jobspls_tests
     tests/anagram_test.cpp
     tests/containsdupe_test.cpp
+    tests/consec_sequence.cpp
     tests/longest_prefix_test.cpp
 )
 target_link_libraries(

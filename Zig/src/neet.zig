@@ -24,5 +24,6 @@ pub const consec_sequence_heap = @import("neet/consec_sequence.zig").consec_sequ
 pub const consec_sequence_set = @import("neet/consec_sequence.zig").consec_sequence_set;
 pub const valid_palindrome = @import("neet/valid_palindrome.zig").valid_palindrome;
 pub const three_sum_set = @import("neet/three_sum.zig").three_sum_set;
+pub const three_sum_ptr = @import("neet/three_sum.zig").three_sum_ptr;
 pub const three_sum_closest = @import("neet/three_sum.zig").three_sum_closest;
 pub const replace_vals_right = @import("neet/replace_vals_right.zig").replace_vals_right;

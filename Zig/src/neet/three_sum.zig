@@ -108,6 +108,76 @@ pub fn three_sum_set(comptime T: type, allocator: Allocator, haystack: []const T
     return sums_out.toOwnedSlice();
 }
 
+pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T, target: T) !?[][3]T {
+    comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
+        @compileError("T must be an integer");
+    };
+
+    if (haystack.len < 3) {
+        return null;
+    }
+
+    // Sort haystack
+    var haysort = try ArrayList(T).initCapacity(allocator, haystack.len);
+    defer haysort.deinit();
+    haysort.appendSliceAssumeCapacity(haystack);
+    sort(T, haysort.items, {}, asc(T));
+
+    // Output triplets
+    var triplets = ArrayList([3]T).init(allocator);
+
+    var outer: usize = 0;
+    while (outer < haysort.items.len) : (outer += 1) {
+        // Left shouldn't be equal to outer or else outer would be duplicated
+        var left = outer + 1;
+        var right = haysort.items.len - 1;
+
+        // Search for a pair of numbers that add up to haysort[outer]
+        while (left < right) {
+            var sum: T = undefined;
+            var diff: T = undefined;
+
+            // Overflow should only really occur with unsigned ints or large values in haystack
+            if (@addWithOverflow(T, haystack[left], haystack[right], &sum)) {
+                // right > left, so move right to a smaller number
+                right -= 1;
+                continue;
+            }
+
+            if (@subWithOverflow(T, target, sum, &diff)) {
+                // sum > target; need a smaller number
+                right -= 1;
+                continue;
+            }
+
+            // Determine which direction to move in
+            switch (std.math.order(diff, haysort.items[outer])) {
+                // If diff > outer then the two nums too large
+                .gt => right -= 1,
+                // diff < outer; nums too small
+                .lt => left += 1,
+                // Valid pair found
+                .eq => {
+                    try triplets.append([3]T{ haysort.items[outer], haysort.items[left], haysort.items[right] });
+
+                    // Move both indices forward past the current values
+                    left += 1;
+                    right -= 1;
+
+                    // Skip values equal to the current values to avoid dupes
+                    // In other words, if the current value from the left is 1,
+                    // and the next three values are also 1 {1, 1, 1, 1},
+                    // then they need to be skipped to avoid dupe triplets.
+                    while (left < right and haysort.items[left] == haysort.items[left + 1]) : (left += 1) {}
+                    while (left < right and haysort.items[right] == haysort.items[right - 1]) {}
+                },
+            }
+        }
+    }
+
+    return triplets.toOwnedSlice();
+}
+
 const ThreeSumError = error{OutOfMemory};
 
 // Convenience function to test 3sum
@@ -152,4 +222,28 @@ test "3sum set example 3" {
     const expected = [1][3]i8{[3]i8{ 0, 0, 0 }};
 
     try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+}
+
+test "3sum pointer example 1" {
+    const haystack = [_]i8{ -1, 0, 1, 2, -1, -4 };
+    const target = 0;
+    const expected = [_][3]i8{ [3]i8{ -1, -1, 2 }, [3]i8{ -1, 0, 1 } };
+
+    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
+}
+
+test "3sum pointer example 2" {
+    const haystack = [_]i8{ 0, 1, 1 };
+    const target = 0;
+    const expected = [0][3]i8{};
+
+    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
+}
+
+test "3sum pointer example 3" {
+    const haystack = [_]i8{ 0, 0, 0 };
+    const target = 0;
+    const expected = [1][3]i8{[3]i8{ 0, 0, 0 }};
+
+    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
 }

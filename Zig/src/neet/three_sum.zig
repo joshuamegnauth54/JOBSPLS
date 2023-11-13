@@ -138,7 +138,7 @@ pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T
             var diff: T = undefined;
 
             // Overflow should only really occur with unsigned ints or large values in haystack
-            if (@addWithOverflow(T, haystack[left], haystack[right], &sum)) {
+            if (@addWithOverflow(T, haysort.items[left], haysort.items[right], &sum)) {
                 // right > left, so move right to a smaller number
                 right -= 1;
                 continue;
@@ -152,7 +152,7 @@ pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T
 
             // Determine which direction to move in
             switch (std.math.order(diff, haysort.items[outer])) {
-                // If diff > outer then the two nums too large
+                // If diff > outer then the two nums are too large
                 .gt => right -= 1,
                 // diff < outer; nums too small
                 .lt => left += 1,
@@ -169,7 +169,7 @@ pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T
                     // and the next three values are also 1 {1, 1, 1, 1},
                     // then they need to be skipped to avoid dupe triplets.
                     while (left < right and haysort.items[left] == haysort.items[left + 1]) : (left += 1) {}
-                    while (left < right and haysort.items[right] == haysort.items[right - 1]) {}
+                    while (left < right and haysort.items[right] == haysort.items[right - 1]) : (right -= 1) {}
                 },
             }
         }
@@ -178,12 +178,24 @@ pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T
     return triplets.toOwnedSlice();
 }
 
+fn test_print_triplets(comptime T: type, triplets: []const [3]T) void {
+    for (triplets) |triplet| {
+        std.debug.print("{{", .{});
+        for (triplet) |num| {
+            std.debug.print(" {} ", .{num});
+        }
+        std.debug.print("}}\n", .{});
+    }
+}
+
 const ThreeSumError = error{OutOfMemory};
 
 // Convenience function to test 3sum
 fn test_three_sum(comptime T: type, haystack: []const T, target: T, expected: []const [3]T, comptime three_sum: fn (comptime T: type, allocator: Allocator, haystack: []const T, target: T) ThreeSumError!?[][3]T) !void {
     const res = try three_sum(T, std.testing.allocator, haystack, target);
     if (res) |sums| {
+        // test_print_triplets(T, sums);
+
         errdefer std.testing.allocator.destroy(sums.ptr);
         try expectEqual(expected.len, sums.len);
 

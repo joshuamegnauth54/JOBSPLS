@@ -11,6 +11,7 @@
 #include "neet/longest_prefix.hpp"
 #include "neet/prod_sans_self.hpp"
 #include "neet/replace_vals_right.hpp"
+#include "neet/substring.hpp"
 #include "neet/two_sum.hpp"
 #include "neet/valid_palindrome.hpp"
 

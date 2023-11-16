@@ -1,5 +1,4 @@
 use std::{
-    cmp::Reverse,
     collections::{BinaryHeap, HashSet},
     hash::Hash,
     ops::{Add, Sub},
@@ -8,12 +7,11 @@ use std::{
 // This impl is, in fact, totally different from my Zig implementation.
 pub fn consec_sequence_heap<T>(haystack: &[T]) -> Vec<T>
 where
-    T: Copy + Ord + Add<i32, Output = T>,
+    T: Copy + Ord + Add<i32, Output = T> + std::fmt::Debug,
 {
-    let mut seqs = BinaryHeap::from_iter(haystack.iter().copied().map(Reverse))
+    let mut seqs = BinaryHeap::from_iter(haystack.iter().copied())
         .into_sorted_vec()
         .into_iter()
-        .map(|val| val.0)
         .peekable();
     let mut max: Option<Vec<T>> = None;
     let mut cur = Vec::default();
@@ -67,11 +65,21 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::consec_sequence_set;
+    use super::{consec_sequence_heap, consec_sequence_set};
 
     #[test]
     fn consec_sequence_set_ex_1() {
         let haystack = [100, 4, 200, 1, 3, 2];
+        let expected = [1, 2, 3, 4];
         let seq = consec_sequence_set(&haystack);
+        assert!(seq.into_iter().eq(expected))
+    }
+
+    #[test]
+    fn consec_sequence_heap_ex_1() {
+        let haystack = [100, 4, 200, 1, 3, 2];
+        let expected = [1, 2, 3, 4];
+        let seq = consec_sequence_heap(&haystack);
+        assert!(seq.into_iter().eq(expected))
     }
 }

@@ -14,7 +14,7 @@ mod valid_palindrome;
 
 pub use anagram::{anagram, anagram_alt};
 pub use concat::concat_slice;
-pub use consec_sequence::consec_sequence_set;
+pub use consec_sequence::{consec_sequence_heap, consec_sequence_set};
 pub use containsdupes::contains_dupes;
 pub use group_anagrams::group_anagrams;
 pub use kth_largest::kth_largest;

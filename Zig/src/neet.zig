@@ -20,6 +20,7 @@ pub const valid_sudoku = @import("neet/valid_sudoku.zig").valid_sudoku;
 // pub const encode_str = @import("neet/")
 // pub const logger_rate_limit =
 // pub const ranked_voting
+pub const prod_sans_self = @import("neet/prod_sans_self.zig").prod_sans_self;
 pub const consec_sequence_heap = @import("neet/consec_sequence.zig").consec_sequence_heap;
 pub const consec_sequence_set = @import("neet/consec_sequence.zig").consec_sequence_set;
 pub const valid_palindrome = @import("neet/valid_palindrome.zig").valid_palindrome;

@@ -28,3 +28,4 @@ pub const three_sum_set = @import("neet/three_sum.zig").three_sum_set;
 pub const three_sum_ptr = @import("neet/three_sum.zig").three_sum_ptr;
 pub const three_sum_closest = @import("neet/three_sum.zig").three_sum_closest;
 pub const replace_vals_right = @import("neet/replace_vals_right.zig").replace_vals_right;
+pub const happy_prefix = @import("neet/happy_prefix.zig").happy_prefix;

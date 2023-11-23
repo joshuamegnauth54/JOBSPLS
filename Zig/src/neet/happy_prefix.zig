@@ -1,9 +1,14 @@
 const std = @import("std");
-const expectEqual = std.testing.expectEqual;
+const expectEqualDeep = std.testing.expectEqualDeep;
+const expectEqualStrings = std.testing.expectEqualStrings;
+const panic = std.debug.panic;
 
 const HappySuffixState = enum { Search, Accumulate };
 
+/// Indices for the happy prefix and suffix.
 pub const HappyPrefix = struct {
+    /// End of the prefix slice; [0, prefix_end] which ends on the last char
+    /// NOTE: Take care when slicing to slice to prefix_end + 1
     prefix_end: usize,
     suffix_start: usize,
 };
@@ -60,14 +65,68 @@ pub fn happy_prefix(domain: []const u8) ?HappyPrefix {
     return null;
 }
 
+// Panic string for tests
+const not_found = "Longest happy prefix for `{s}` should be found.";
+
 test "longest happy prefix example 1" {
     const domain = "level";
+    const expected = "l";
+    const expected_idx = HappyPrefix{ .prefix_end = 0, .suffix_start = domain.len - 1 };
     const result = happy_prefix(domain);
 
     if (result) |happy| {
-        try expectEqual(@intCast(usize, 0), happy.prefix_end);
-        try expectEqual(domain.len - 1, happy.suffix_start);
+        try expectEqualDeep(expected_idx, happy);
+
+        const prefix = domain[0 .. happy.prefix_end + 1];
+        const suffix = domain[happy.suffix_start..domain.len];
+        try expectEqualStrings(prefix, suffix);
+        try expectEqualStrings(expected, prefix);
     } else {
-        @panic("Longest happy prefix for `level` should be found");
+        panic(not_found, .{domain});
+    }
+}
+
+test "longest happy prefix example 2" {
+    const domain = "ababab";
+    const expected = "abab";
+    const expected_idx = HappyPrefix{ .prefix_end = 3, .suffix_start = 2 };
+    const result = happy_prefix(domain);
+
+    if (result) |happy| {
+        try expectEqualDeep(expected_idx, happy);
+
+        const prefix = domain[0 .. happy.prefix_end + 1];
+        const suffix = domain[happy.suffix_start..domain.len];
+        try expectEqualStrings(prefix, suffix);
+        try expectEqualStrings(expected, prefix);
+    } else {
+        panic(not_found, .{domain});
+    }
+}
+
+test "longest happy prefix example 3" {
+    const domain = "meowemilinyameow";
+    const expected = "meow";
+    const expected_idx = HappyPrefix{ .prefix_end = 3, .suffix_start = 12 };
+    const result = happy_prefix(domain);
+
+    if (result) |happy| {
+        try expectEqualDeep(expected_idx, happy);
+
+        const prefix = domain[0 .. happy.prefix_end + 1];
+        const suffix = domain[happy.suffix_start..domain.len];
+        try expectEqualStrings(prefix, suffix);
+        try expectEqualStrings(expected, prefix);
+    } else {
+        panic(not_found, .{domain});
+    }
+}
+
+test "longest happy prefix example 4" {
+    const domain = "";
+    const result = happy_prefix(domain);
+
+    if (result) |_| {
+        @panic("Shouldn't find a happy suffix for an empty string.");
     }
 }

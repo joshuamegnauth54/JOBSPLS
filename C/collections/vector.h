@@ -3,6 +3,7 @@
 #define JOSH_COLLECTIONS_VECTOR_H
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <sys/types.h>
 
 // Growable, managed slice (array).
@@ -44,23 +45,28 @@ __attribute__((nonnull)) void vec_free(struct Vector *const self);
 // NOTE: `drop` is called on every element of the vector to clean up resources.
 // Ownership is transferred to `drop`.
 // Therefore, `drop` must deallocate memory if necessary.
-__attribute__((nonnull)) void vec_free_with(struct Vector *const vec,
-                                            void drop(void *));
+__attribute__((nonnull)) void vec_free_with(struct Vector *const self,
+                                            void drop(void *const));
 
 // Map T => U
-__attribute__((nonnull)) struct Vector *vec_map(struct Vector const *const vec,
-                                         size_t const U_data_size,
-                                         void *map(void *));
+//
+// `map` must not modify its argument in any way.
+__attribute__((nonnull)) struct Vector *vec_map(struct Vector const *const self,
+                                                size_t const U_data_size,
+                                                void *map(void const *const));
 
-__attribute__((nonnull)) void vec_push(struct Vector *const vec,
+__attribute__((nonnull)) bool vec_push(struct Vector *const self,
                                        void const *const value);
 
-__attribute__((nonnull)) void *vec_pop(struct Vector *const vec);
+__attribute__((nonnull)) void *vec_pop(struct Vector *const self);
 
-__attribute__((nonnull)) void *vec_get(struct Vector const *const vec,
+__attribute__((nonnull)) void *vec_at(struct Vector const *const self,
+                                      size_t const index);
+
+__attribute__((nonnull)) void *vec_get(struct Vector const *const self,
                                        size_t const index);
 
-__attribute__((nonnull)) void *vec_remove(struct Vector *const vec,
+__attribute__((nonnull)) void *vec_remove(struct Vector *const self,
                                           size_t const index);
 
 // Resize vector to hold N items

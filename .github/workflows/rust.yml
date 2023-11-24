@@ -16,7 +16,7 @@ jobs:
           components: rustfmt
       - name: Ensure Rust code is formatted
         run: |
-          cd Rust
+          cd Rust/jobspls
           cargo fmt --all --check
 
   test:
@@ -29,7 +29,7 @@ jobs:
           components: rustfmt
       - name: Check Rust code with clippy
         run: |
-          cd Rust
+          cd Rust/jobspls
           cargo clippy --all-features --verbose
 
   coverage:
@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          cd Rust
+          cd Rust/jobspls
           cargo tarpaulin --all-features --workspace --verbose
 
   build-linux:
@@ -53,7 +53,15 @@ jobs:
       - uses: rui314/setup-mold@v1
       - name: Build
         run: |
-          cd Rust
+          cd Rust/jobspls
           cargo build --all --release
 
+  build-macOS:
+    name: Build project (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --all --release
 

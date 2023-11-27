@@ -17,7 +17,8 @@ pub const longest_prefix = @import("neet/longest_prefix.zig").longest_prefix;
 pub const group_anagrams = @import("neet/group_anagrams.zig").group_anagrams;
 pub const k_largest = @import("neet/k_largest.zig").k_largest;
 pub const valid_sudoku = @import("neet/valid_sudoku.zig").valid_sudoku;
-// pub const encode_str = @import("neet/")
+pub const serialize_slice_str = @import("neet/encode_decode_strs.zig").serialize_slice_str;
+pub const deserialize_slice_str = @import("neet/encode_decode_strs.zig").deserialize_slice_str;
 // pub const logger_rate_limit =
 // pub const ranked_voting
 pub const prod_sans_self = @import("neet/prod_sans_self.zig").prod_sans_self;

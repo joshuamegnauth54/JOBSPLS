@@ -1,9 +1,14 @@
-pub fn replace_vals_right_iter(nums: &[i32]) -> Vec<i32> {
+use num::{Integer, NumCast, Signed};
+
+pub fn replace_vals_right_iter<I>(nums: &[I]) -> Vec<I>
+where
+    I: Integer + Signed + NumCast + Copy,
+{
     let mut out: Vec<_> = nums
         .iter()
         .copied()
         .rev()
-        .scan(-1, |state, x| {
+        .scan(I::from(-1).unwrap(), |state, x| {
             let current = *state;
             *state = x.max(*state);
             Some(current)

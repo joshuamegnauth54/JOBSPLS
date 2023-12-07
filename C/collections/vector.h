@@ -8,6 +8,12 @@
 
 // Growable, managed slice (array).
 //
+// This implementation can use `memcpy_s` if __STDC_WANT_LIB_EXT1__
+// is defined and set to 1.
+// A constraint handler may be registered to handle `memcpy_s` violations.
+//
+// https://en.cppreference.com/w/c/error/set_constraint_handler_s
+//
 // Some inspiration from: https://blog.phundrak.com/writing-dynamic-vector-c/
 struct Vector {
   // Capacity of `data` in terms of how many T may be stored
@@ -55,19 +61,36 @@ __attribute__((nonnull)) struct Vector *vec_map(struct Vector const *const self,
                                                 size_t const U_data_size,
                                                 void *map(void const *const));
 
+// Push `value` to the end of the Vector, resizing if necessary.
+//
+// Returns NULL on error.
 __attribute__((nonnull)) bool vec_push(struct Vector *const self,
                                        void const *const value);
 
+// Pop the last value from the end of the Vector.
+//
+// Returns NULL if empty.
 __attribute__((nonnull)) void *vec_pop(struct Vector *const self);
 
+// Retrieves the bytes at `index` (unchecked).
+//
+// WARNING: Validity isn't checked at all.
 __attribute__((nonnull)) void *vec_at(struct Vector const *const self,
                                       size_t const index);
 
+// Safely retrieves the bytes/object at `index`.
+//
+// Returns `NULL` is `index` is out of bounds.
 __attribute__((nonnull)) void *vec_get(struct Vector const *const self,
                                        size_t const index);
 
+// Removes and returns the bytes/object at `index`.
+//
+// WARNING: Unchecked and unsafe.
 __attribute__((nonnull)) void *vec_remove(struct Vector *const self,
                                           size_t const index);
+
+__attribute__((nonnull)) void* vec_remove_safe(struct Vector* const self, size_t const index);
 
 // Resize vector to hold N items
 // * N should be > 0

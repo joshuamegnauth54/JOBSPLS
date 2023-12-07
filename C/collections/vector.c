@@ -1,15 +1,17 @@
+#include <sys/types.h>
 #define __STDC_WANT_LIB_EXT1__ 1
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "vector.h"
 
 #define VEC_DEFAULT_CAP 8
 
 // Size of N items
+// (Why did I write this function?)
 static inline size_t size_of_n(size_t const size, size_t const n) {
   return size * n;
 }
@@ -99,15 +101,94 @@ __attribute__((nonnull)) bool vec_push(struct Vector *const self,
   }
 
   // Copy `value` into the buffer.
+  // `current` refers to uninitialized bytes
   void *const current = vec_at(self, self->pos);
 
 // Use memcpy_s if available
 #ifdef __STD_LIB_EXT1__
-
+  int const err = memcpy_s(current, self->data_size, value, self->data_size);
+  if (err != 0) {
+    return false;
+  }
 #else
-
+  memcpy(current, value, self->data_size);
 #endif
 
   self->pos++;
   return true;
+}
+
+__attribute__((nonnull)) void *vec_pop(struct Vector *const self) {
+  // Vector is empty if pos == 0
+  if (self->pos) {
+    return vec_remove(self, self->pos - 1);
+  }
+
+  return NULL;
+}
+
+__attribute__((nonnull)) void *vec_at(struct Vector const *const self,
+                                      size_t const index) {
+  return &self->data[self->data_size * index];
+}
+
+// `vec_get` is just `vec_at` with a check.
+__attribute__((nonnull)) void *vec_get(struct Vector const *const self,
+                                       size_t const index) {
+  if (index > self->pos) {
+    return NULL;
+  }
+
+  return vec_at(self, index);
+}
+
+__attribute__((nonnull)) void *vec_remove(struct Vector *const self,
+                                          size_t const index) {
+  // Vec is empty if pos == 0
+  if (self->pos && index < self->pos) {
+    // Move the object from the vector to these allocated bytes
+    // Caller owns the memory
+    u_int8_t *obj_moved = malloc(self->data_size);
+    if (!obj_moved) {
+      return NULL;
+    }
+
+    // Object to copy
+    u_int8_t *obj_vec = &self->data[self->data_size * index];
+
+    // Use memcpy_s if available
+#ifdef __STD_LIB_EXT1__
+    int err = memcpy_s(obj_moved, self->data_size, obj_vec, self->data_size);
+    if (err) {
+      free(obj_moved);
+      return NULL;
+    }
+#else
+    memcpy(obj_moved, obj_vec, self->data_size);
+#endif
+
+    if (index != self->pos - 1) {
+      // Amount of bytes to copy
+      // If pos == 1 or index == 0 then copy_size can be 0 or overflow
+      size_t const copy_size = (self->pos != 1 && index > 0)
+                                   ? self->data_size * (self->pos - index - 1)
+                                   : self->data_size;
+
+#ifdef __STD_LIB_EXT1__
+      err = memcpy_s(vec_at(self, index), copy_size, vec_at(self, index + 1),
+                     copy_size);
+      if (err) {
+        free(obj_moved);
+        return NULL;
+      }
+#else
+      memcpy(vec_at(self, index), vec_at(self, index + 1), copy_size);
+#endif
+    }
+    self->pos--;
+
+    return obj_moved;
+  }
+
+  return NULL;
 }

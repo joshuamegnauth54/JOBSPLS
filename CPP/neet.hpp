@@ -6,6 +6,7 @@
 #include "neet/consec_sequence.hpp"
 #include "neet/containsduplicate.hpp"
 #include "neet/group_anagrams.hpp"
+#include "neet/happy_prefix.hpp"
 #include "neet/kth_largest.hpp"
 #include "neet/last_word_len.hpp"
 #include "neet/longest_prefix.hpp"

@@ -5,7 +5,7 @@ project(
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wold-style-cast -Wctor-dtor-privacy -Wswitch-default -g")
+set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -Wold-style-cast -Wctor-dtor-privacy -Wswitch-default -Wformat=2 -Wconversion -Wtrampolines -Wimplicit-fallthrough -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -fstrict-flex-arrays=3 -fstack-clash-protection -fstack-protector-strong -Wl,-z,nodlopen -Wl,-z,noexecstack, -Wl,-z,relro -Wl,-z,now -fcf-protection=full -g")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

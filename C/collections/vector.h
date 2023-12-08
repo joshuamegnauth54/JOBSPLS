@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 // Growable, managed slice (array).
@@ -86,11 +87,9 @@ __attribute__((nonnull)) void *vec_get(struct Vector const *const self,
 
 // Removes and returns the bytes/object at `index`.
 //
-// WARNING: Unchecked and unsafe.
+// Caller owns the returned object which must be deallocated.
 __attribute__((nonnull)) void *vec_remove(struct Vector *const self,
                                           size_t const index);
-
-__attribute__((nonnull)) void* vec_remove_safe(struct Vector* const self, size_t const index);
 
 // Resize vector to hold N items
 // * N should be > 0
@@ -104,10 +103,10 @@ __attribute__((nonnull)) bool vec_resize(struct Vector *const self,
 // Shrink vector so that it holds exactly the capacity.
 __attribute__((nonnull)) bool vec_shrink(struct Vector *const self);
 
-// Reserve space for `n_items` total elements.
+// Reserve space for `additional` extra elements.
 //
-// `n_items` should be > 0 and > capacity.
+// `additional` is added onto the capacity.
 __attribute__((nonnull)) bool vec_reserve(struct Vector *const self,
-                                          size_t const n_items);
+                                          size_t const additional);
 
 #endif

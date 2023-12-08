@@ -1,10 +1,10 @@
-#include <sys/types.h>
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "vector.h"
 
@@ -191,4 +191,34 @@ __attribute__((nonnull)) void *vec_remove(struct Vector *const self,
   }
 
   return NULL;
+}
+
+__attribute__((nonnull)) bool vec_resize(struct Vector *const self,
+                                         size_t const n_items) {
+  if (n_items == 0) {
+    return false;
+  }
+
+  // Try realloc
+  // `realloc` returns NULL on error or a possibly new address
+  // on success.
+  void *new_data = reallocarray(self->data, n_items, self->data_size);
+  if (!new_data) {
+    // Original pointer is left alone. Caller decides what to do.
+    return false;
+  }
+
+  // Original pointer is invalid and doesn't need to be freed.
+  self->data = new_data;
+  self->capacity = n_items;
+  return true;
+}
+
+__attribute__((nonnull)) bool vec_shrink(struct Vector *const self) {
+  return vec_resize(self, self->capacity);
+}
+
+__attribute__((nonnull)) bool vec_reserve(struct Vector *const self,
+                                          size_t const additional) {
+  return vec_resize(self, self->capacity + additional);
 }

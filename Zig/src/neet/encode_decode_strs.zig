@@ -41,8 +41,18 @@ pub fn serialize_slice_str(allocator: Allocator, strings: []const []const u8) ![
     return ser_buf;
 }
 
-pub fn deserialize_slice_str(allocator: Allocator, s: []const u8) ![][]const u8 {
-    // var rem, const len = try take_until(s, ":");
+pub fn deserialize_slice_str(s: []const u8) !IResult([]const u8) {
+    // Parse the length of the string
+    const result = try take_until(s, ":");
+    const len = try fmt.parseUnsigned(usize, result.parsed, 10);
+
+    // Take `len` bytes then validate as unicode
+    const str_res = try take_n(result.remainder, len);
+    if (!std.unicode.utf8ValidateSlice(str_res.parsed)) {
+        return ParseError.InvalidUnicode;
+    }
+
+    return IResult([]const u8).new(str_res.parsed, str_res.remainder);
 }
 
 // Format string to serialize strings
@@ -64,26 +74,37 @@ fn serialize_str_buf(buf: []u8, s: []const u8) !void {
     _ = try fmt.bufPrint(buf, ser_str_fmt, .{ s.len, s });
 }
 
-const ParseError = error{DelimiterNotFound};
+const ParseError = error{ DelimiterNotFound, InvalidLength, InvalidUnicode };
 
-const ParseResult = struct { parsed: []const u8, remainder: []const u8 };
+const ParseResult =
+    struct { parsed: []const u8, remainder: []const u8 };
+
+fn IResult(comptime T: type) type {
+    return struct {
+        /// Parsed value
+        value: T,
+        /// Remaining unparsed bytes
+        remainder: []const u8,
+
+        fn new(value: T, remainder: []const u8) @This() {
+            return @This(){ .value = value, .remainder = remainder };
+        }
+    };
+}
 
 // Take bytes from `s` until delimiter is reached.
 //
 // Returns an error if delimiter isn't found.
 fn take_until(s: []const u8, delimiter: []const u8) ParseError!ParseResult {
     if (delimiter.len == 0) {
-        return ParseResult {
-            .parsed = s,
-            .remainder = [0]const u8{}
-        };
+        return ParseResult{ .parsed = s, .remainder = comptime &[0]u8{} };
     }
 
     // Accumulate everything before the delimiter.
     var i: usize = 0;
     while (i < s.len) : (i += 1) {
         // Check if delimiter has been reached
-        var j = 0;
+        var j: usize = 0;
         while (j < delimiter.len and i + j < s.len) : (j += 1) {
             if (s[i] != delimiter[j]) {
                 break;
@@ -95,7 +116,15 @@ fn take_until(s: []const u8, delimiter: []const u8) ParseError!ParseResult {
         }
     }
 
-    return .DelimiterNotFound;
+    return ParseError.DelimiterNotFound;
+}
+
+fn take_n(bytes: []const u8, amount: usize) !ParseResult {
+    if (amount > bytes.len) {
+        return ParseError.InvalidLength;
+    }
+
+    return ParseResult{ .parsed = bytes[0..amount], .remainder = bytes[amount..] };
 }
 
 test "serialize strings simple" {
@@ -116,4 +145,12 @@ test "serialize strings empty" {
     defer std.testing.allocator.destroy(actual.ptr);
 
     try expectEqualStrings(expected, actual);
+}
+
+test "deserialize string slice" {
+    const expected = "All tomorrow's parties";
+    const s = fmt.comptimePrint("{}:{s}", .{ expected.len, expected });
+
+    const actual = try deserialize_slice_str(s);
+    try expectEqualStrings(expected, actual.value);
 }

@@ -1,6 +1,7 @@
 const std = @import("std");
 const fmt = std.fmt;
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 const expectEqualStrings = std.testing.expectEqualStrings;
 
 /// Serialize a slice of strings into a single, flat string.
@@ -12,7 +13,7 @@ pub fn serialize_slice_str(allocator: Allocator, strings: []const []const u8) ![
     defer allocator.destroy(strs_offsets.ptr);
 
     // Length of entire buffer to serialize
-    var total_len: usize = 0;
+    var ser_len: usize = 0;
 
     // Calculate required lengths of each string
     var i: usize = 0;
@@ -23,25 +24,81 @@ pub fn serialize_slice_str(allocator: Allocator, strings: []const []const u8) ![
         // So the offset at i = 0 is 0
         // Offset at i = 1 is the length of string #0
         // Offset at i = 2 is len string #0 + len string #1...
-        strs_offsets[i] = total_len;
-        total_len += slen;
+        strs_offsets[i] = ser_len;
+        ser_len += slen;
     }
 
     // Allocate buffer for entire serialized string
-    var ser_buf = try allocator.alloc(u8, total_len);
-    errdefer allocator.destroy(ser_buf.ptr);
+    // List is delimited by l and e, so the length is ser_len + 2
+    // NOTE: I didn't incorporate the delimiters into ser_len itself
+    // because then that'd cause every access to be offset by 1 or 2.
+    // That's very error prone. And annoying.
+    // `total_len` is the entire buffer's len as a result
+    const total_len = ser_len + 2;
+    var full_buf = try allocator.alloc(u8, total_len);
+    errdefer allocator.destroy(full_buf.ptr);
+
+    // Add delimiters to the full buffer
+    full_buf[0] = 'l';
+    full_buf[total_len - 1] = 'e';
+
+    // Strings serialization buf
+    var ser_buf = full_buf[1..total_len];
+    std.debug.print("full_buf size: {}\n", .{full_buf.len});
+    std.debug.print("ser_buf size: {}\n", .{ser_buf.len});
 
     i = 0;
     while (i < strings.len) : (i += 1) {
         const offset = strs_offsets[i];
         const s = strings[i];
+        std.debug.print("str size: {} and offset: {}\n", .{ s.len, offset });
         try serialize_str_buf(ser_buf[offset..], s);
     }
 
-    return ser_buf;
+    return full_buf;
 }
 
-pub fn deserialize_slice_str(s: []const u8) !IResult([]const u8) {
+/// Deserialize encoded strings into string slice.
+///
+/// Caller owns the memory which consists of:
+/// * The literal slice of strings
+/// * Each string in the slice
+///
+/// Both of these must be freed.
+///
+/// While this is technically Bencode, I'm only supporting flat lists.
+pub fn deserialize_slice_str(allocator: Allocator, encoded: []const u8) !IResult([]const []const u8) {
+    var strings = ArrayList([]const u8).init();
+    errdefer strings.deinit();
+
+    // Parse opening delimiter
+    var buffer = try take_n(encoded, 1);
+    if (!buffer.parsed[0] == 'a') {
+        return ParseError.DelimiterNotFound;
+    }
+
+    while (buffer.remainder.len != 1) {
+        buffer = try deserialize_str(buffer.remainder);
+
+        // Copy string to give the caller ownership
+        const len = buffer.value.len;
+        const string = try allocator.alloc(u8, len);
+        errdefer allocator.destroy(string.ptr);
+
+        @memcpy(string.ptr, buffer.value, len);
+        try strings.append(string);
+    }
+
+    return strings.toOwnedSlice();
+}
+
+/// Deserialize a single string.
+///
+/// The lifetime of the desrialized string is tied to the original string.
+/// Thus, the caller needs to copy the returned bytes to store the string.
+///
+/// Strings are guaranteed to be Unicode.
+pub fn deserialize_str(s: []const u8) !IResult([]const u8) {
     // Parse the length of the string
     const result = try take_until(s, ":");
     const len = try fmt.parseUnsigned(usize, result.parsed, 10);
@@ -129,7 +186,7 @@ fn take_n(bytes: []const u8, amount: usize) !ParseResult {
 
 test "serialize strings simple" {
     const strings = [3][]const u8{ "Frieren", " is ", "awesome." };
-    const expected = "7:Frieren4: is 8:awesome.";
+    const expected = "l7:Frieren4: is 8:awesome.e";
 
     const actual = try serialize_slice_str(std.testing.allocator, &strings);
     defer std.testing.allocator.destroy(actual.ptr);
@@ -139,7 +196,7 @@ test "serialize strings simple" {
 
 test "serialize strings empty" {
     const strings = [1][]const u8{""};
-    const expected = "0:";
+    const expected = "l0:e";
 
     const actual = try serialize_slice_str(std.testing.allocator, &strings);
     defer std.testing.allocator.destroy(actual.ptr);
@@ -151,6 +208,23 @@ test "deserialize string slice" {
     const expected = "All tomorrow's parties";
     const s = fmt.comptimePrint("{}:{s}", .{ expected.len, expected });
 
-    const actual = try deserialize_slice_str(s);
+    const actual = try deserialize_str(s);
     try expectEqualStrings(expected, actual.value);
+}
+
+test "deserialize empty string slice" {
+    const expected = "";
+    const s = "0:";
+
+    const actual = try deserialize_str(s);
+    try expectEqualStrings(expected, actual.value);
+}
+
+test "deserialized string slice correctly owns memory" {
+    const strings = "l4:meowe";
+
+    // Deserialization will borrow from `owned` and copy the string into an owned buffer
+    // Freeing `owned` shouldn't cause a use after free
+    const owned = try std.testing.allocator.alloc(u8, strings.len);
+    @memcpy(owned.ptr, strings, strings.len);
 }

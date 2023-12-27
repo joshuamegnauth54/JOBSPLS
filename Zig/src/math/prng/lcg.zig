@@ -63,6 +63,7 @@ pub fn LCG(
     };
 }
 
+/// Errors for invalid parameters.
 pub const LcgError = error{ InvalidSeed, InvalidMult, InvalidIncr, InvalidMod };
 
 test "lcg prng generates expected values" {
@@ -70,7 +71,8 @@ test "lcg prng generates expected values" {
 
     // Hull-Dobell
     // 11 and 32 are relatively prime
-    // 9 - 1 is divisible by the prime factors if 32
+    // 9 - 1 is divisible by the prime factors of 32
+    // Therefore the period length is 32
     var lcg = try LCG(u16).new(3, 9, 11, 32);
     var actual = try testing.allocator.alloc(u16, expected.len);
     defer testing.allocator.free(actual);

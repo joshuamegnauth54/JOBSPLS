@@ -26,7 +26,12 @@ pub fn valid_palindrome(s: []const u8) bool {
 }
 
 test "valid palindromes should succeed" {
-    const palindromes = [_][]const u8{ "level", "repaper", "peeweep", "tattarrattat" };
+    const palindromes = [_][]const u8{
+        "level",
+        "repaper",
+        "peeweep",
+        "tattarrattat",
+    };
 
     for (palindromes) |palindrome| {
         try expect(valid_palindrome(palindrome));
@@ -42,7 +47,12 @@ test "invalid palindromes should fail" {
 }
 
 test "words that aren't palindromes should fail" {
-    const not_palins = [_][]const u8{ "fat", "cat", "on a", "mat" };
+    const not_palins = [_][]const u8{
+        "fat",
+        "cat",
+        "on a",
+        "mat",
+    };
 
     for (not_palins) |s| {
         try expect(!valid_palindrome(s));

@@ -56,7 +56,14 @@ fn desc_str(_: void, a: []const u8, b: []const u8) bool {
 }
 
 test "longest prefix found" {
-    const words = [_][]const u8{ "good", "goofy", "goober", "gopher", "going", "gone" };
+    const words = [_][]const u8{
+        "good",
+        "goofy",
+        "goober",
+        "gopher",
+        "going",
+        "gone",
+    };
     var result = try longest_prefix(std.testing.allocator, &words);
 
     if (result) |actual| {

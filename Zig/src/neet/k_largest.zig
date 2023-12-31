@@ -4,7 +4,13 @@ const PriorityQueue = std.PriorityQueue;
 const Order = std.math.Order;
 const expectEqual = std.testing.expectEqual;
 
-pub fn k_largest(comptime T: type, allocator: Allocator, haystack: []const T, k: usize, comptime compfunc: ?fn (void, T, T) Order) !?T {
+pub fn k_largest(
+    comptime T: type,
+    allocator: Allocator,
+    haystack: []const T,
+    k: usize,
+    comptime compfunc: ?fn (void, T, T) Order,
+) !?T {
     const compfunc_def = comptime switch (@typeInfo(T)) {
         .Int, .ComptimeInt, .Float, .ComptimeFloat => opcomp: {
             if (compfunc) |f| {

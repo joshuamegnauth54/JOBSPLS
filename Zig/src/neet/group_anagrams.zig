@@ -70,13 +70,40 @@ fn group_anagram_print(groups: []ArrayList([]const u8)) void {
 }
 
 test "group anagrams correct groups" {
-    const words = [_][]const u8{ "tacos", "star", "angle", "angel", "coast", "asleep", "introduces", "please", "arts", "space", "cats", "dog", "god", "rosiest", "resort", "stories" };
+    const words = [_][]const u8{
+        "tacos",
+        "star",
+        "angle",
+        "angel",
+        "coast",
+        "asleep",
+        "introduces",
+        "please",
+        "arts",
+        "space",
+        "cats",
+        "dog",
+        "god",
+        "rosiest",
+        "resort",
+        "stories",
+    };
 
     const groups = try group_anagrams(std.testing.allocator, &words);
     defer group_anagram_deinit(std.testing.allocator, groups);
 
-    // FIXME: Zig format mangles this code...
-    const expected = [10][]const []const u8{ &[2][]const u8{ "angle", "angel" }, &[1][]const u8{"introduces"}, &[1][]const u8{"resort"}, &[2][]const u8{ "asleep", "please" }, &[2][]const u8{ "rosiest", "stories" }, &[2][]const u8{ "tacos", "coast" }, &[1][]const u8{"cats"}, &[2][]const u8{ "star", "arts" }, &[2][]const u8{ "dog", "god" }, &[1][]const u8{"space"} };
+    const expected = [10][]const []const u8{
+        &[2][]const u8{ "angle", "angel" },
+        &[1][]const u8{"introduces"},
+        &[1][]const u8{"resort"},
+        &[2][]const u8{ "asleep", "please" },
+        &[2][]const u8{ "rosiest", "stories" },
+        &[2][]const u8{ "tacos", "coast" },
+        &[1][]const u8{"cats"},
+        &[2][]const u8{ "star", "arts" },
+        &[2][]const u8{ "dog", "god" },
+        &[1][]const u8{"space"},
+    };
 
     try expectEqual(expected.len, groups.len);
     group_anagram_print(groups);

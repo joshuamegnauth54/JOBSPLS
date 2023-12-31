@@ -3,7 +3,11 @@ const expectEqual = std.testing.expectEqual;
 
 const ResTwoSum = @import("two_sum.zig").ResTwoSum;
 
-pub fn two_sum_sorted_search(comptime T: type, haystack: []T, target: T) ?ResTwoSum {
+pub fn two_sum_sorted_search(
+    comptime T: type,
+    haystack: []T,
+    target: T,
+) ?ResTwoSum {
     comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("T must be an integer of any precision");
     };
@@ -42,7 +46,11 @@ pub fn two_sum_sorted_search(comptime T: type, haystack: []T, target: T) ?ResTwo
     return null;
 }
 
-pub fn two_sum_sorted_pointer(comptime T: type, haystack: []T, target: T) ?ResTwoSum {
+pub fn two_sum_sorted_pointer(
+    comptime T: type,
+    haystack: []T,
+    target: T,
+) ?ResTwoSum {
     comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("T must be an integer of any precision");
     };
@@ -73,7 +81,16 @@ pub fn two_sum_sorted_pointer(comptime T: type, haystack: []T, target: T) ?ResTw
     return null;
 }
 
-fn test_two_sum(comptime T: type, haystack: []T, target: T, comptime two_sum: fn (comptime T: type, haystack: []T, target: T) ?ResTwoSum) void {
+fn test_two_sum(
+    comptime T: type,
+    haystack: []T,
+    target: T,
+    comptime two_sum: fn (
+        comptime T: type,
+        haystack: []T,
+        target: T,
+    ) ?ResTwoSum,
+) void {
     const res = two_sum(T, haystack, target);
     if (res) |indices| {
         const lower = haystack[indices.i];

@@ -6,7 +6,11 @@ const expect = std.testing.expect;
 /// Copy `nums` with each value replaced with that of the maximum value to its right.
 ///
 /// Caller owns the memory if the length isn't zero.
-pub fn replace_values_right(comptime T: type, allocator: Allocator, nums: []const T) ![]T {
+pub fn replace_values_right(
+    comptime T: type,
+    allocator: Allocator,
+    nums: []const T,
+) ![]T {
     // T may be any signed int
     comptime switch (@typeInfo(T)) {
         .Int => |int| {

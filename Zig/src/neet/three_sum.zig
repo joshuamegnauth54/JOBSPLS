@@ -35,7 +35,12 @@ fn clean_map(comptime T: type, map: *AutoHashMap(T, ArrayList(usize))) void {
     }
 }
 
-pub fn three_sum_set(comptime T: type, allocator: Allocator, haystack: []const T, target: T) !?[][3]T {
+pub fn three_sum_set(
+    comptime T: type,
+    allocator: Allocator,
+    haystack: []const T,
+    target: T,
+) !?[][3]T {
     comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("T must be an integer");
     };
@@ -108,7 +113,12 @@ pub fn three_sum_set(comptime T: type, allocator: Allocator, haystack: []const T
     return sums_out.toOwnedSlice();
 }
 
-pub fn three_sum_ptr(comptime T: type, allocator: Allocator, haystack: []const T, target: T) !?[][3]T {
+pub fn three_sum_ptr(
+    comptime T: type,
+    allocator: Allocator,
+    haystack: []const T,
+    target: T,
+) !?[][3]T {
     comptime if (@typeInfo(T) != .Int and @typeInfo(T) != .ComptimeInt) {
         @compileError("T must be an integer");
     };
@@ -191,7 +201,18 @@ fn test_print_triplets(comptime T: type, triplets: []const [3]T) void {
 const ThreeSumError = error{OutOfMemory};
 
 // Convenience function to test 3sum
-fn test_three_sum(comptime T: type, haystack: []const T, target: T, expected: []const [3]T, comptime three_sum: fn (comptime T: type, allocator: Allocator, haystack: []const T, target: T) ThreeSumError!?[][3]T) !void {
+fn test_three_sum(
+    comptime T: type,
+    haystack: []const T,
+    target: T,
+    expected: []const [3]T,
+    comptime three_sum: fn (
+        comptime T: type,
+        allocator: Allocator,
+        haystack: []const T,
+        target: T,
+    ) ThreeSumError!?[][3]T,
+) !void {
     const res = try three_sum(T, std.testing.allocator, haystack, target);
     if (res) |sums| {
         // test_print_triplets(T, sums);
@@ -215,9 +236,18 @@ fn test_three_sum(comptime T: type, haystack: []const T, target: T, expected: []
 test "3sum set example 1" {
     const haystack = [_]i8{ -1, 0, 1, 2, -1, -4 };
     const target = 0;
-    const expected = [_][3]i8{ [3]i8{ -1, -1, 2 }, [3]i8{ -1, 0, 1 } };
+    const expected = [_][3]i8{
+        [3]i8{ -1, -1, 2 },
+        [3]i8{ -1, 0, 1 },
+    };
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_set,
+    );
 }
 
 test "3sum set example 2" {
@@ -225,7 +255,13 @@ test "3sum set example 2" {
     const target = 0;
     const expected = [0][3]i8{};
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_set,
+    );
 }
 
 test "3sum set example 3" {
@@ -233,15 +269,30 @@ test "3sum set example 3" {
     const target = 0;
     const expected = [1][3]i8{[3]i8{ 0, 0, 0 }};
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_set);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_set,
+    );
 }
 
 test "3sum pointer example 1" {
     const haystack = [_]i8{ -1, 0, 1, 2, -1, -4 };
     const target = 0;
-    const expected = [_][3]i8{ [3]i8{ -1, -1, 2 }, [3]i8{ -1, 0, 1 } };
+    const expected = [_][3]i8{
+        [3]i8{ -1, -1, 2 },
+        [3]i8{ -1, 0, 1 },
+    };
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_ptr,
+    );
 }
 
 test "3sum pointer example 2" {
@@ -249,7 +300,13 @@ test "3sum pointer example 2" {
     const target = 0;
     const expected = [0][3]i8{};
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_ptr,
+    );
 }
 
 test "3sum pointer example 3" {
@@ -257,5 +314,11 @@ test "3sum pointer example 3" {
     const target = 0;
     const expected = [1][3]i8{[3]i8{ 0, 0, 0 }};
 
-    try test_three_sum(i8, &haystack, target, &expected, three_sum_ptr);
+    try test_three_sum(
+        i8,
+        &haystack,
+        target,
+        &expected,
+        three_sum_ptr,
+    );
 }

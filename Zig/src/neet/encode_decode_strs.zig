@@ -2,6 +2,7 @@ const std = @import("std");
 const fmt = std.fmt;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
+const expectEqualDeep = std.testing.expectEqualDeep;
 const expectEqualStrings = std.testing.expectEqualStrings;
 const expectEqualSlices = std.testing.expectEqualSlices;
 
@@ -95,9 +96,15 @@ pub fn deserialize_slice_str(
         try strings.append(string);
     }
 
+    // Parse closing delimiter
+    const end_delim = try take_n(remainder, 1);
+    if (end_delim.parsed[0] != 'e') {
+        return ParseError.DelimiterNotFound;
+    }
+
     return IResult([]const []const u8){
         .value = strings.toOwnedSlice(),
-        .remainder = remainder,
+        .remainder = end_delim.remainder,
     };
 }
 
@@ -258,20 +265,26 @@ test "deserialize empty string slice" {
 
 test "deserialized string slice correctly owns memory" {
     const expected = [1][]const u8{"meow"};
-    const strings = fmt.comptimePrint("l{}:{s}e", .{ expected.len, expected });
+    const strings = fmt.comptimePrint(
+        "l{}:{s}e",
+        .{ expected[0].len, expected[0] },
+    );
 
     // Deserialization will borrow from `owned` and copy the string into an owned buffer
     // Freeing `owned` shouldn't cause a use after free
     const owned = try std.testing.allocator.alloc(u8, strings.len);
-    errdefer std.testing.allocator.destroy(owned.ptr);
     @memcpy(owned.ptr, strings, strings.len);
 
     // Deserialize from the allocated heap buffer then free the buf
-    const actual = try deserialize_slice_str(std.testing.allocator, strings);
+    const actual = deserialize_slice_str(std.testing.allocator, strings) catch |err| {
+        std.testing.allocator.destroy(owned.ptr);
+        return err;
+    };
     defer std.testing.allocator.destroy(actual.value.ptr);
+    defer for (actual.value) |str| std.testing.allocator.destroy(str.ptr);
     std.testing.allocator.destroy(owned.ptr);
 
     const expected_remainder = "";
     try expectEqualStrings(expected_remainder, actual.remainder);
-    try expectEqualSlices([]const u8, &expected, actual.value);
+    try expectEqualDeep(&expected, actual.value);
 }

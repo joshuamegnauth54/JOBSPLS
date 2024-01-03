@@ -2,6 +2,7 @@ const std = @import("std");
 const fmt = std.fmt;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
+const expectEqual = std.testing.expectEqual;
 const expectEqualDeep = std.testing.expectEqualDeep;
 const expectEqualStrings = std.testing.expectEqualStrings;
 const expectEqualSlices = std.testing.expectEqualSlices;
@@ -286,5 +287,32 @@ test "deserialized string slice correctly owns memory" {
 
     const expected_remainder = "";
     try expectEqualStrings(expected_remainder, actual.remainder);
+    try expectEqualDeep(&expected, actual.value);
+}
+
+test "deserializing encoded empty string works" {
+    const strings = "le";
+
+    const actual = try deserialize_slice_str(std.testing.allocator, strings);
+    defer if (actual.value.len > 0) std.testing.allocator.destroy(actual.value.ptr);
+
+    const expected_remainder = "";
+    try expectEqualStrings(expected_remainder, actual.remainder);
+
+    const expected_len: usize = 0;
+    try expectEqual(expected_len, actual.value.len);
+}
+
+test "deseralizing multiple strings works" {
+    const strings = "l4:meow14:giraffe noisese";
+
+    const actual = try deserialize_slice_str(std.testing.allocator, strings);
+    defer std.testing.allocator.destroy(actual.value.ptr);
+    defer for (actual.value) |str| std.testing.allocator.destroy(str.ptr);
+
+    const expected_remainder = "";
+    try expectEqualStrings(expected_remainder, actual.remainder);
+
+    const expected = [_][]const u8{ "meow", "giraffe noises" };
     try expectEqualDeep(&expected, actual.value);
 }

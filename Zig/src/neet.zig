@@ -31,3 +31,4 @@ pub const three_sum_closest = @import("neet/three_sum.zig").three_sum_closest;
 pub const replace_vals_right = @import("neet/replace_vals_right.zig").replace_vals_right;
 pub const happy_prefix = @import("neet/happy_prefix.zig").happy_prefix;
 pub const HappyPrefix = @import("neet/happy_prefix.zig").HappyPrefix;
+pub const decode_str_repeat = @import("neet/394_decode_string.zig").decode_string_repeat;

@@ -17,117 +17,16 @@ pub fn decode_string_repeat(allocator: Allocator, encoded: []const u8) ![]const 
     errdefer buffer.deinit();
 
     var i: usize = 0;
-    while (i < encoded.len) : (i += 1) {
+    while (i < encoded.len) {
         const temp = try decode_inner(allocator, encoded[i..encoded.len]);
         defer temp.value.deinit();
+
+        // Append fully parsed string and jump to new index
         try buffer.appendSlice(temp.value.items);
+        i += temp.index;
     }
 
     return buffer.toOwnedSlice();
-}
-
-fn decode_string(allocator: Allocator, encoded: []const u8, depth: u8) !DecodeStrRes {
-    // Final repeated and concatenated string
-    var buffer = ArrayList(u8).init(allocator);
-    errdefer buffer.deinit();
-
-    // Intermediary buf for parsing
-    var temp = ArrayList(u8).init(allocator);
-    defer temp.deinit();
-
-    // Parser's current state
-    var state: DecodeState = .NewStr;
-    // Start index of the value being parsed
-    var start: usize = 0;
-    // Amount of times to repeat buffer
-    var repeat: usize = 1;
-
-    var i: usize = 0;
-    while (i < encoded.len) : (i += 1) {
-        switch (state) {
-            .NewStr => {
-                std.debug.print("NewStr: {s}\n", .{encoded});
-                start = i;
-
-                const ch = encoded[i];
-                if (isAlphabetic(ch)) {
-                    state = .Text;
-                } else if (isDigit(ch)) {
-                    state = .Number;
-                } else {
-                    return DecodeError.ExpectedAlphanumeric;
-                }
-            },
-            .Number => {
-                const ch = encoded[i];
-                // std.debug.print("Number ch: {s}\n", .{[1]u8{ch}});
-
-                if (ch == '[') {
-                    // Open bracket signifies end of num and beginning of text
-                    // Parse the repeat value and switch to the text state
-                    repeat = try parseInt(u32, encoded[start..i], 10);
-
-                    state = .Text;
-                    start = i + 1;
-                } else if (!isDigit(ch)) {
-                    return DecodeError.InvalidNumber;
-                }
-            },
-            .Text => {
-                const ch = encoded[i];
-                std.debug.print("Text ch: {s}\n", .{[1]u8{ch}});
-                // If the current char is a digit, recurse to parse the nested str
-                // The nested string is attached to this depth's buffer
-                // in order to repeat the whole buf
-                if (isDigit(ch)) {
-                    const nested = try decode_string(allocator, encoded[i..], depth + 1);
-                    defer nested.value.deinit();
-                    try temp.appendSlice(nested.value.items);
-                    i += nested.index;
-                }
-
-                if (encoded[i] == ']') {
-                    // Copy string slice to temp buffer
-                    // std.debug.print("Encoded copy: {s}\n", .{encoded[start .. i - 1]});
-                    // try temp.appendSlice(encoded[start .. i - 1]);
-
-                    // Repeat the string slice
-
-                    // Return owned string and index past the closing bracket
-                    try buffer.ensureUnusedCapacity(temp.items.len * repeat);
-                    var j: usize = 0;
-                    while (j < repeat) : (j += 1) {
-                        buffer.appendSliceAssumeCapacity(temp.items);
-                    }
-
-                    // HACK: Keep track of the depth so parsing unnested strings works
-                    // Otherwise, the algorithm doesn't parse the entire str at depth 0
-                    if (depth > 0 or (depth == 0 and i == encoded.len - 1)) {
-                        return DecodeStrRes{
-                            .value = buffer,
-                            .index = i + 1,
-                        };
-                    }
-
-                    state = .NewStr;
-                } else {
-                    try temp.append(ch);
-                }
-            },
-        }
-    }
-
-    // Numbers can't appear before bare text
-    // Therefore, bare text always has a repeat of 1
-    // If repeat != 1, then a bracket should've been found in the state machine
-    if (repeat == 1) {
-        try buffer.appendSlice(temp.items);
-        return DecodeStrRes{
-            .value = buffer,
-            .index = i + 1,
-        };
-    }
-    return DecodeError.ExpectedDelimiter;
 }
 
 // Decode a single, arbitrarily nested string sequence.
@@ -148,10 +47,11 @@ fn decode_inner(allocator: Allocator, encoded: []const u8) !DecodeStrRes {
                 const ch = encoded[i];
                 if (isAlphabetic(ch)) {
                     state = .Text;
+                    // Append current char so that it's not skipped
+                    try buffer.append(ch);
                 } else if (isDigit(ch)) {
                     state = .Number;
                 } else {
-                    std.debug.print("{} => {s}\n", .{ i, encoded });
                     return DecodeError.ExpectedAlphanumeric;
                 }
             },
@@ -162,9 +62,7 @@ fn decode_inner(allocator: Allocator, encoded: []const u8) !DecodeStrRes {
                     // Open bracket signifies end of num and beginning of text
                     // Parse the repeat value and switch to the text state
                     repeat = try parseInt(u32, encoded[start..i], 10);
-
                     state = .Text;
-                    // start = i + 1;
                 } else if (!isDigit(ch)) {
                     return DecodeError.InvalidNumber;
                 }
@@ -179,7 +77,9 @@ fn decode_inner(allocator: Allocator, encoded: []const u8) !DecodeStrRes {
                     defer nested.value.deinit();
                     try buffer.appendSlice(nested.value.items);
                     // This is the index after the closing bracket
-                    i = nested.index;
+                    i += nested.index;
+
+                    continue;
                 }
 
                 // Return buffer if this block is fully parsed
@@ -187,6 +87,7 @@ fn decode_inner(allocator: Allocator, encoded: []const u8) !DecodeStrRes {
                     // Repeat buffer if required
                     try repeat_buffer(&buffer, repeat);
 
+                    // Skip closing bracket
                     return DecodeStrRes{ .value = buffer, .index = i + 1 };
                 }
 
@@ -199,9 +100,10 @@ fn decode_inner(allocator: Allocator, encoded: []const u8) !DecodeStrRes {
     // String exhausted. Repeat and return.
     try repeat_buffer(&buffer, repeat);
 
-    return DecodeStrRes{ .value = buffer, .index = i + 1 };
+    return DecodeStrRes{ .value = buffer, .index = i };
 }
 
+// Repeat string in buffer
 fn repeat_buffer(buffer: *ArrayList(u8), repeat: usize) !void {
     if (repeat > 1) {
         // Current length i.e. the complete string to repeat
@@ -219,6 +121,7 @@ fn repeat_buffer(buffer: *ArrayList(u8), repeat: usize) !void {
     }
 }
 
+// Parser state
 const DecodeState = enum { NewStr, Number, Text };
 
 const DecodeStrRes = struct {
@@ -257,6 +160,13 @@ test "LeetCode 394 example 2 nested" {
 test "LeetCode 394 example 3 no repeat" {
     const input = "2[abc]3[cd]ef";
     const expected = "abcabccdcdcdef";
+
+    try test_main(input, expected);
+}
+
+test "Plain string no repeat" {
+    const input = "emiwoah";
+    const expected = input;
 
     try test_main(input, expected);
 }

@@ -32,3 +32,4 @@ pub const replace_vals_right = @import("neet/replace_vals_right.zig").replace_va
 pub const happy_prefix = @import("neet/happy_prefix.zig").happy_prefix;
 pub const HappyPrefix = @import("neet/happy_prefix.zig").HappyPrefix;
 pub const decode_str_repeat = @import("neet/394_decode_string.zig").decode_string_repeat;
+pub const sort_array_parity = @import("neet/905_array_parity.zig").sort_array_parity;

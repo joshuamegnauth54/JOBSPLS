@@ -3,6 +3,7 @@ const Allocator = std.mem.Allocator;
 
 /// Sort `nums` by even/odd parity.
 ///
+/// `T` must be an integer type.
 /// Caller owns allocated memory which is always the size of `nums`.
 ///
 /// From:
@@ -13,11 +14,8 @@ pub fn sort_array_parity(
     nums: []const T,
 ) ![]T {
     comptime switch (@typeInfo(T)) {
-        .ComptimeInt => {},
-        .Int => {},
-        .ComptimeFloat => {},
-        .Float => {},
-        else => @compileError("`sort_array_parity` requires numbers"),
+        .ComptimeInt, .Int => {},
+        else => @compileError("`sort_array_parity` only supports integers"),
     };
 
     var sorted = try allocator.alloc(T, nums.len);

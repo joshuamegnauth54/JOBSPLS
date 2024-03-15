@@ -73,14 +73,22 @@ test "LeetCode example 2" {
     try expectEqualSlices(u8, &expected, actual);
 }
 
-test "unbalanced parity fails" {
+test "unbalanced parity (even) fails" {
     const input = [_]u8{ 4, 6, 8, 10 };
     const expected = ArrayParityError.NotEnoughOdds;
 
-    const actual = sort_array_parity_2(u8, std.testing.allocator, &input) catch |err| {
-        try expectError(expected, err);
-    };
+    const actual = sort_array_parity_2(u8, std.testing.allocator, &input);
+    errdefer std.testing.allocator.free(actual catch unreachable);
 
-    std.testing.allocator.free(actual);
-    @panic("Expected error `NotEnoughOdds`");
+    try expectError(expected, actual);
+}
+
+test "unbalanced parity (odd) fails" {
+    const input = [_]u8{ 3, 5, 7, 9 };
+    const expected = ArrayParityError.NotEnoughEvens;
+
+    const actual = sort_array_parity_2(u8, std.testing.allocator, &input);
+    errdefer std.testing.allocator.free(actual catch unreachable);
+
+    try expectError(expected, actual);
 }

@@ -69,11 +69,51 @@ pub fn levenshtein(allocator: Allocator, src: []const u8, dst: []const u8) !usiz
     return dist[slen - 1][dlen - 1];
 }
 
-pub fn levenshtein_opt(allocator: Allocator, src: []const u8, dst: []const u8) usize {
-    _ = dst;
-    _ = src;
-    _ = allocator;
-    unreachable;
+/// Wagner-Fischer but memory optimized.
+pub fn levenshtein_opt(allocator: Allocator, src: []const u8, dst: []const u8) !usize {
+    const slen = src.len;
+    const dlen = dst.len;
+
+    if (slen == 0) {
+        return dlen;
+    }
+    if (dlen == 0) {
+        return slen;
+    }
+
+    var memo = [2][]usize{ undefined, undefined };
+    memo[0] = try allocator.alloc(usize, dlen + 1);
+    defer allocator.free(memo[0]);
+    memo[1] = try allocator.alloc(usize, dlen + 1);
+    defer allocator.free(memo[1]);
+
+    // Fill out first row (empty string to destination).
+    for (0..dlen + 1) |i| {
+        memo[0][i] = i;
+    }
+
+    // Current read/write position, 0 or 1.
+    // This works similarly to double buffering except I'm not swapping pointers.
+    var read: u1 = 1;
+    var write: u1 = 0;
+
+    for (0..slen) |i| {
+        read = read ^ 1;
+        write = write ^ 1;
+        memo[write][0] = i;
+        for (0..dlen, 1..) |j, j_memo| {
+            const diagonal = memo[read][j_memo - 1];
+            const substitution = if (src[i] == dst[j]) diagonal else diagonal + 1;
+            const deletion = memo[read][j_memo] + 1;
+            const insertion = memo[write][j_memo - 1] + 1;
+
+            const costs = [3]usize{ substitution, deletion, insertion };
+            memo[write][j_memo] = mem.min(usize, &costs);
+        }
+    }
+
+    // Write is the most current position
+    return memo[write][dlen];
 }
 
 pub const Costs = struct {
@@ -86,9 +126,16 @@ pub const Costs = struct {
     }
 };
 
-test "sitting kitten" {
+test "sitting kitten (normal)" {
     const expected: usize = 3;
     const actual = try levenshtein(std.testing.allocator, "sitting", "kitten");
+
+    try expectEqual(expected, actual);
+}
+
+test "sitting kitten (optimized)" {
+    const expected: usize = 3;
+    const actual = try levenshtein_opt(std.testing.allocator, "sitting", "kitten");
 
     try expectEqual(expected, actual);
 }

@@ -147,9 +147,37 @@ test "empty kitten" {
     try expectEqual(expected, actual);
 }
 
+test "empty kitten (optimized)" {
+    const expected: usize = 6;
+    const actual = try levenshtein_opt(std.testing.allocator, "", "kitten");
+
+    try expectEqual(expected, actual);
+}
+
 test "kitten empty" {
     const expected: usize = 6;
     const actual = try levenshtein(std.testing.allocator, "kitten", "");
+
+    try expectEqual(expected, actual);
+}
+
+test "kitten empty (optimized)" {
+    const expected: usize = 6;
+    const actual = try levenshtein_opt(std.testing.allocator, "", "kitten");
+
+    try expectEqual(expected, actual);
+}
+
+test "sunday saturday" {
+    const expected: usize = 3;
+    const actual = try levenshtein(std.testing.allocator, "sunday", "saturday");
+
+    try expectEqual(expected, actual);
+}
+
+test "sunday saturday (optimized)" {
+    const expected: usize = 3;
+    const actual = try levenshtein_opt(std.testing.allocator, "sunday", "saturday");
 
     try expectEqual(expected, actual);
 }

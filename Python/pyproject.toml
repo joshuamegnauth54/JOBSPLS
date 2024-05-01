@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Josh Obtains Benefits by Saliently Programming Lame Stuff"
 authors = ["Josh Megnauth <jo.sh@tutanota.com>"]
 license = "Unlicense"
-readme = "../../README.md"
+readme = "../README.md"
 repository = "https://github.com/joshuamegnauth54/JOBSPLS"
 keywords = ["algorithms", "data structures", "jobs"]
 

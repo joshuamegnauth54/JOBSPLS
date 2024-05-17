@@ -198,6 +198,10 @@ test "simple add works" {
     } else {
         std.debug.panic("Expected {} but got no values.", .{expected});
     }
+
+    if (iter.next()) |invalid| {
+        std.debug.panic("Unexpected extra value: {}", .{invalid});
+    }
 }
 
 test "leetcode example 1" {
@@ -246,5 +250,30 @@ test "leetcode example 2" {
         } else {
             std.debug.panic("Expected {} but iterator is exhausted.", .{num});
         }
+    }
+}
+
+test "leetcode example 3" {
+    var lhs = try LinkedList().new(std.testing.allocator);
+    defer lhs.deinit();
+    var rhs = try LinkedList().new(std.testing.allocator);
+    defer rhs.deinit();
+
+    try lhs.insert_head(0);
+    try rhs.insert_head(0);
+
+    var out = try lhs.add(&rhs);
+    defer out.deinit();
+
+    const expected: u8 = 0;
+    var iter = out.iterator();
+    if (iter.next()) |actual| {
+        try expectEqual(expected, actual);
+    } else {
+        std.debug.panic("Expected {} but iterator is exhausted.", .{expected});
+    }
+
+    if (iter.next()) |invalid| {
+        std.debug.panic("Unexpected extra value: {}", .{invalid});
     }
 }

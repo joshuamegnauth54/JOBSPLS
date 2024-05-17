@@ -91,6 +91,11 @@ fn LinkedList() type {
                 try result.insert_head(sum);
             }
 
+            // Overflow may have leftover values
+            if (overflow > 0) {
+                try result.insert_head(overflow);
+            }
+
             return result;
         }
 
@@ -182,14 +187,64 @@ test "simple add works" {
 
     try lhs.insert_head(3);
     try rhs.insert_head(4);
-    const expected: u8 = 7;
 
     var out = try lhs.add(&rhs);
     defer out.deinit();
+
+    const expected: u8 = 7;
     var iter = out.iterator();
     if (iter.next()) |actual| {
         try expectEqual(expected, actual);
     } else {
         std.debug.panic("Expected {} but got no values.", .{expected});
+    }
+}
+
+test "leetcode example 1" {
+    var lhs = try LinkedList().new(std.testing.allocator);
+    defer lhs.deinit();
+    var rhs = try LinkedList().new(std.testing.allocator);
+    defer rhs.deinit();
+
+    try lhs.insert_head_slice(&[_]u8{ 3, 4, 2 });
+    try rhs.insert_head_slice(&[_]u8{ 4, 6, 5 });
+
+    var out = try lhs.add(&rhs);
+    defer out.deinit();
+
+    // 807
+    // const expected = [_]u8{ 7, 0, 8 };
+    const expected = [_]u8{ 8, 0, 7 };
+    var iter = out.iterator();
+    for (expected) |num| {
+        if (iter.next()) |actual| {
+            try expectEqual(num, actual);
+        } else {
+            std.debug.panic("Expected {} but iterator is exhausted.", .{num});
+        }
+    }
+}
+
+test "leetcode example 2" {
+    var lhs = try LinkedList().new(std.testing.allocator);
+    defer lhs.deinit();
+    var rhs = try LinkedList().new(std.testing.allocator);
+    defer rhs.deinit();
+
+    try lhs.insert_head_slice(&[_]u8{ 9, 9, 9, 9, 9, 9, 9 });
+    try rhs.insert_head_slice(&[_]u8{ 9, 9, 9, 9 });
+
+    var out = try lhs.add(&rhs);
+    defer out.deinit();
+
+    // const expected = [_]u8{ 8, 9, 9, 9, 0, 0, 0, 1 };
+    const expected = [_]u8{ 1, 0, 0, 0, 9, 9, 9, 8 };
+    var iter = out.iterator();
+    for (expected) |num| {
+        if (iter.next()) |actual| {
+            try expectEqual(num, actual);
+        } else {
+            std.debug.panic("Expected {} but iterator is exhausted.", .{num});
+        }
     }
 }

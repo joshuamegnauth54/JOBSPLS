@@ -35,3 +35,4 @@ pub const decode_str_repeat = @import("neet/394_decode_string.zig").decode_strin
 pub const sort_array_parity = @import("neet/905_array_parity.zig").sort_array_parity;
 pub const sort_array_parity_2 = @import("neet/922_array_parity_2.zig").sort_array_parity_2;
 pub const add_two_numbers = @import("neet/002_add_two.zig").add_two_numbers;
+pub const max_sub_array = @import("neet/053_max_sub_array.zig").max_sub_array;

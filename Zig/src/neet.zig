@@ -36,3 +36,4 @@ pub const sort_array_parity = @import("neet/905_array_parity.zig").sort_array_pa
 pub const sort_array_parity_2 = @import("neet/922_array_parity_2.zig").sort_array_parity_2;
 pub const add_two_numbers = @import("neet/002_add_two.zig").add_two_numbers;
 pub const max_sub_array = @import("neet/053_max_sub_array.zig").max_sub_array;
+pub const max_product_sub_array = @import("neet/152_max_prod_sub_array.zig");

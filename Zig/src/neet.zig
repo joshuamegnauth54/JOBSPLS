@@ -37,3 +37,4 @@ pub const sort_array_parity_2 = @import("neet/922_array_parity_2.zig").sort_arra
 pub const add_two_numbers = @import("neet/002_add_two.zig").add_two_numbers;
 pub const max_sub_array = @import("neet/053_max_sub_array.zig").max_sub_array;
 pub const max_product_sub_array = @import("neet/152_max_prod_sub_array.zig");
+pub const min_rotated_slice = @import("neet/153_min_rotated_slice.zig").min_rotated_slice;

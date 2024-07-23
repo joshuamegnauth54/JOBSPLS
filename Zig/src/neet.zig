@@ -38,4 +38,6 @@ pub const add_two_numbers = @import("neet/002_add_two.zig").add_two_numbers;
 pub const max_sub_array = @import("neet/053_max_sub_array.zig").max_sub_array;
 pub const max_product_sub_array = @import("neet/152_max_prod_sub_array.zig");
 pub const min_rotated_slice = @import("neet/153_min_rotated_slice.zig").min_rotated_slice;
-pub const search_rotated_slice = @import("neet/33_search_rotated.zig").search_rotated_slice;
+pub const search_rotated_slice = @import("neet/033_search_rotated.zig").search_rotated_slice;
+pub const container_most_water = @import("neet/011_container_water.zig").most_water;
+pub const binary_sum_two = @import("neet/371_sum_two.zig").sum_two;

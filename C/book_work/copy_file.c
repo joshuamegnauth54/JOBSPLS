@@ -1,15 +1,14 @@
 #include <assert.h>
 #include <fcntl.h>
-#include <linux/limits.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 
 __attribute__((nonnull))
-int copy_file(const char* src, const char* dst) {
+int copy_file(const char* restrict src, const char* restrict dst) {
     struct stat src_stat;
     if (stat(src, &src_stat) < 0) {
         printf("Source: %s\nDest: %s\n", src, dst);
@@ -29,7 +28,7 @@ int copy_file(const char* src, const char* dst) {
         free(buf);
         return -1;
     }
-    int dst_fd = open(dst, O_WRONLY | O_CREAT);
+    int dst_fd = open(dst, O_WRONLY | O_CREAT, src_stat.st_mode);
     if (dst_fd < 0) {
         perror("open (dst)");
         close(src_fd);
@@ -53,15 +52,6 @@ int copy_file(const char* src, const char* dst) {
         return -1;
     }
 
-    // open doesn't set permissions?
-    if (fchmod(dst_fd, src_stat.st_mode) == -1) {
-        perror("fchmod");
-        close(src_fd);
-        close(dst_fd);
-        free((void*) buf);
-        return -1;
-    }
-    
     close(src_fd);
     close(dst_fd);
     free(buf);
@@ -69,7 +59,7 @@ int copy_file(const char* src, const char* dst) {
 }
 
 __attribute__((nonnull))
-const char* ask_path(const char* question) {
+const char* ask_path(const char* restrict question) {
     assert(write(STDOUT_FILENO, question, strnlen(question, 16)) > 0);
 
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));
@@ -135,7 +125,8 @@ int main(int argc, const char* argv[]) {
             success = EXIT_SUCCESS;
         }
     } else {
-        fputs("wtf", stderr);
+        assert(argc > 0);
+        printf("%s source dest\n", argv[0]);
     }
 
     return success;
